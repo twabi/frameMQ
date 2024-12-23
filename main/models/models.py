@@ -2,6 +2,8 @@ import json
 from dataclasses import dataclass
 from typing import List, Callable, Any
 
+from kafka import KafkaProducer
+
 from main.utils.enums import CompressionType
 
 
@@ -37,3 +39,66 @@ class CaptureParams:
     codec: str = 'h264'
     platform: str = 'linux'
     level:int = 1
+
+@dataclass
+class EncodeParams:
+    encoder_type: str
+    quality: int
+    chunk_num: int
+
+@dataclass
+class ProducerMetric:
+    quality: int
+    message_uuid: str
+    message_num:int
+    level: int
+    chunk_num: int
+    total_chunks: int
+    brokers: int
+    partitions: int
+    produce_time: int
+    message_size: int
+    message: str
+
+    def to_dict(self):
+        return {
+            "quality": self.quality,
+            "message_uuid": self.message_uuid,
+            "message_num": self.message_num,
+            "level": self.level,
+            "chunk_num": self.chunk_num,
+            "total_chunks": self.total_chunks,
+            "brokers": self.brokers,
+            "partitions": self.partitions,
+            "produce_time": self.produce_time,
+            "message_size": self.message_size,
+            "message": self.message
+        }
+
+    @staticmethod
+    def from_dict(data: dict):
+        return ProducerMetric(
+            quality=data["quality"],
+            message_uuid=data["message_uuid"],
+            message_num=data["message_num"],
+            level=data["level"],
+            chunk_num=data["chunk_num"],
+            total_chunks=data["total_chunks"],
+            brokers=data["brokers"],
+            partitions=data["partitions"],
+            produce_time=data["produce_time"],
+            message_size=data["message_size"],
+            message=data["message"]
+        )
+
+
+@dataclass
+class TransferParams:
+    quality: int
+    level: int
+    brokers: int
+    partitions: int
+    frame_number: int
+    frame: List[bytes]
+    topic: str
+    writer: KafkaProducer

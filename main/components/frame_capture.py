@@ -56,10 +56,12 @@ class FrameCapture:
                 if not ret:
                     continue
 
+                if self.stopped:
+                    break
+
 
         except Exception as e:
-            print(e)
-            return
+            raise e
 
     def stop(self):
         self.stopped = True
