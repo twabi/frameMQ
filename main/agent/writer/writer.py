@@ -49,11 +49,14 @@ class Writer:
 
         self.stopped = True
         self.metrics = []
-        self.frame_capture = FrameCapture(params=self.capture_params)
-        self.frame_encode = FrameEncode(frame=None, params=self.encode_params)
+
         self.frame_transfer = FrameTransfer(
             start_time=time.time(),
             transfer=self.transfer_params)
+        self.frame_encode = FrameEncode(frame=None, params=self.encode_params,
+                                        frame_transfer=self.frame_transfer)
+        self.frame_capture = FrameCapture(params=self.capture_params,
+                                          frame_encoder=self.frame_encode)
 
         self.thread = None
 
@@ -68,19 +71,7 @@ class Writer:
     def run_threads(self):
         try:
             while not self.stopped:
-                self.frame_encode.update_frame(
-                    new_frame=self.frame_capture.frame,
-                    frame_num=self.frame_capture.frame_num
-                )
-
-                self.frame_transfer.update_frame(
-                    new_frame=self.frame_encode.chunk_array,
-                    frame_num=self.frame_encode.frame_num
-                )
-
                 self.metrics = self.frame_transfer.metrics
-
-                time.sleep(0.15)
         except Exception as e:
             self.stop()
             print("writer: ", e)

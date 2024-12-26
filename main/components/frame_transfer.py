@@ -1,4 +1,4 @@
-from threading import Thread
+from threading import Thread, Condition
 import base64
 import uuid
 import time
@@ -22,7 +22,7 @@ class FrameTransfer:
         self.metrics = []
         self.ack_array = []
 
-
+        self.condition = Condition()
         self.stopped = True
 
     def acked(self, payload):
@@ -38,13 +38,18 @@ class FrameTransfer:
 
     def update_frame(self, new_frame: bytes, frame_num: int):
         """Update the frame with a new frame and its number"""
-        self.chunk_array = new_frame
-        self.frame_num = frame_num
+        with self.condition:
+            self.chunk_array = new_frame
+            self.frame_num = frame_num
+            self.condition.notify()
 
     def transfer(self):
         try:
             while not self.stopped:
-                if len(self.chunk_array) > 0:
+                with self.condition:
+                    self.condition.wait_for(lambda: len(self.chunk_array) > 0 or self.stopped)
+                    if self.stopped:
+                        break
                     key = str(uuid.uuid1()).encode('utf-8')
                     time_stamp = int(time.time() * 1000)
 
@@ -71,8 +76,8 @@ class FrameTransfer:
                         ).add_callback(self.acked)
                         self.metrics.append({k: v for k, v in payload.items() if k != "message"})
 
-                        self.writer.flush()
-                        self.chunk_array = []
+                    self.writer.flush()
+                    self.chunk_array = []
                     print("time taken: ", time.time() - self.start_time)
 
                 if self.stopped:

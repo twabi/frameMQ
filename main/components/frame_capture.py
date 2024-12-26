@@ -6,7 +6,10 @@ from main.models.models import CaptureParams
 
 
 class FrameCapture:
-    def __init__(self, params:CaptureParams):
+    def __init__(self, params:CaptureParams,
+                    frame_encoder=None
+
+                 ):
         self.frame = None
         self.frame_num = 0
 
@@ -23,6 +26,8 @@ class FrameCapture:
         self.width = self.get_dimensions(self.level)[0]
         self.height = self.get_dimensions(self.level)[1]
         self.fps = self.get_dimensions(self.level)[2]
+
+        self.frame_encoder = frame_encoder
 
         self.pipeline = f"{string_source} ! image/jpeg, width={self.width}, height={self.height}, framerate={self.fps}/1 ! jpegdec ! videoconvert ! video/x-raw, format=BGR ! appsink"
         self.cap = cv2.VideoCapture(self.pipeline, cv2.CAP_GSTREAMER)
@@ -54,6 +59,8 @@ class FrameCapture:
                 ret, frame = self.cap.read()
                 self.frame = frame
                 self.frame_num += 1
+
+                self.frame_encoder.update_frame(frame, self.frame_num)
 
                 if not ret:
                     continue
