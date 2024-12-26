@@ -1,6 +1,6 @@
 import json
 from dataclasses import dataclass
-from typing import List, Callable, Any
+from typing import List, Callable, Any, Optional
 
 from kafka import KafkaProducer
 
@@ -40,11 +40,18 @@ class CaptureParams:
     platform: str = 'linux'
     level:int = 1
 
+    def update_level(self, level: int):
+        self.level = level
+
 @dataclass
 class EncodeParams:
     encoder_type: str
     quality: int
     chunk_num: int
+
+    def update(self, quality: int, chunk_num: int):
+        self.quality = quality
+        self.chunk_num = chunk_num
 
 @dataclass
 class ProducerMetric:
@@ -96,9 +103,25 @@ class ProducerMetric:
 class TransferParams:
     quality: int
     level: int
-    brokers: int
+    brokers: List[str]
     partitions: int
     frame_number: int
     frame: List[bytes]
     topic: str
     writer: KafkaProducer
+
+    def update(self, quality: int, level: int, brokers: List[str],
+               partitions: int, frame_number: int, frame: List[bytes], topic: str):
+        self.quality = quality
+        self.level = level
+        self.brokers = brokers
+        self.partitions = partitions
+        self.frame_number = frame_number
+        self.frame = frame
+
+@dataclass
+class WriterParams:
+    brokers: List[str]
+    topic: str
+    encoder_type: Optional[str] = 'turbojpeg'
+

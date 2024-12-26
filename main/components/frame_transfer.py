@@ -7,7 +7,8 @@ from main.models.models import TransferParams, ProducerMetric
 
 
 class FrameTransfer:
-    def __init__(self, transfer:TransferParams):
+    def __init__(self, transfer:TransferParams, start_time:float):
+        self.start_time = start_time
         self.chunk_array = transfer.frame
         self.quality = transfer.quality
         self.frame_num = transfer.frame_number
@@ -35,6 +36,11 @@ class FrameTransfer:
         Thread(target=self.transfer, daemon=True).start()
         return self
 
+    def update_frame(self, new_frame: bytes, frame_num: int):
+        """Update the frame with a new frame and its number"""
+        self.chunk_array = new_frame
+        self.frame_num = frame_num
+
     def transfer(self):
         try:
             while not self.stopped:
@@ -50,7 +56,7 @@ class FrameTransfer:
                             level = self.level,
                             chunk_num = i,
                             total_chunks= len(self.chunk_array),
-                            brokers = self.brokers,
+                            brokers = len(self.brokers),
                             partitions = self.partitions,
                             produce_time = time_stamp,
                             message_size = len(chunk),
@@ -65,13 +71,15 @@ class FrameTransfer:
                         ).add_callback(self.acked)
                         self.metrics.append({k: v for k, v in payload.items() if k != "message"})
 
-                    self.writer.flush()
-                    self.chunk_array = []
+                        self.writer.flush()
+                        self.chunk_array = []
+                    print("time taken: ", time.time() - self.start_time)
 
                 if self.stopped:
                     break
 
         except Exception as e:
+            self.stop()
             raise e
 
     def stop(self):

@@ -1,0 +1,36 @@
+import time
+import unittest
+from main.agent.writer.writer import Writer
+from main.models.models import WriterParams
+
+
+class TestWriter(unittest.TestCase):
+    def setUp(self):
+        self.writer = Writer(
+            params=WriterParams(
+                brokers=[
+                    '133.41.117.50:9092', '133.41.117.50:9093',
+                    '133.41.117.50:9094', '133.41.117.50:9095'
+                ],
+                topic='video-trans',
+                encoder_type='turbojpeg'
+            )
+        )
+
+    def test_start_and_stop(self):
+        self.writer.start()
+        time.sleep(2)  # Allow some time for the threads to initialize
+        self.assertFalse(self.writer.stopped, "Writer should be running after start.")
+
+        self.writer.stop()
+        self.assertTrue(self.writer.stopped, "Writer should be stopped after stop.")
+
+    def test_write(self):
+        self.writer.start()
+        time.sleep(55)  # Simulate some runtime
+        self.writer.stop()
+
+        print(
+            self.writer.metrics
+        )
+        self.assertTrue(len(self.writer.metrics) > 0, "Metrics should have recorded data.")

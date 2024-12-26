@@ -8,6 +8,7 @@ from main.models.models import CaptureParams
 class FrameCapture:
     def __init__(self, params:CaptureParams):
         self.frame = None
+        self.frame_num = 0
 
         # Capture parameters
         self.source = params.source
@@ -52,6 +53,7 @@ class FrameCapture:
             while not self.stopped:
                 ret, frame = self.cap.read()
                 self.frame = frame
+                self.frame_num += 1
 
                 if not ret:
                     continue
@@ -61,6 +63,7 @@ class FrameCapture:
 
 
         except Exception as e:
+            self.stop()
             raise e
 
     def stop(self):
