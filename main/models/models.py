@@ -2,7 +2,7 @@ import json
 from dataclasses import dataclass
 from typing import List, Callable, Any, Optional
 
-from kafka import KafkaProducer
+from kafka import KafkaProducer, KafkaConsumer
 
 from main.utils.enums import CompressionType
 
@@ -124,4 +124,16 @@ class WriterParams:
     brokers: List[str]
     topic: str
     encoder_type: Optional[str] = 'turbojpeg'
+
+
+@dataclass
+class RetrieveParams:
+    topic: str
+    reader: KafkaConsumer
+
+@dataclass
+class ReaderParams:
+    brokers: List[str]
+    topic: str
+    group_id: str
 

@@ -2,7 +2,7 @@ import unittest
 import time
 from kafka import KafkaProducer
 from main.models.models import TransferParams
-from main.components.frame_transfer import FrameTransfer
+from main.components.writer.frame_transfer import FrameTransfer
 
 
 class TestFrameTransfer(unittest.TestCase):

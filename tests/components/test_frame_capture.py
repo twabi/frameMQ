@@ -1,7 +1,7 @@
 import time
 import unittest
 
-from main.components.frame_capture import FrameCapture
+from main.components.writer.frame_capture import FrameCapture
 from main.models.models import CaptureParams
 
 

@@ -2,7 +2,7 @@ import unittest
 import numpy as np
 import time
 
-from main.components.frame_encode import FrameEncode
+from main.components.writer.frame_encode import FrameEncode
 from main.models.models import EncodeParams
 
 

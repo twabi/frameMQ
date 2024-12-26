@@ -2,9 +2,9 @@ import threading
 import time
 
 from kafka import KafkaProducer
-from main.components.frame_capture import FrameCapture
-from main.components.frame_encode import FrameEncode
-from main.components.frame_transfer import FrameTransfer
+from main.components.writer.frame_capture import FrameCapture
+from main.components.writer.frame_encode import FrameEncode
+from main.components.writer.frame_transfer import FrameTransfer
 from main.models.models import CaptureParams, EncodeParams, TransferParams, WriterParams
 import platform
 
