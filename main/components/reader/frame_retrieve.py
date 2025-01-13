@@ -20,6 +20,7 @@ class FrameRetrieve:
         self.frame_decode = frame_decode
 
         self.reader.subscribe([self.topic])
+        self.payload_array = []
 
         self.lock = threading.Lock()
         self.stopped = False
@@ -39,7 +40,12 @@ class FrameRetrieve:
                     image_data = base64.b64decode(payload["message"])
                     payload['consume_time'] = time.time() * 1000
 
-                    self.frame_decode.update_data(payload, image_data)
+                    del payload["message"]
+                    #self.frame_decode.update_data(payload, image_data)
+                    self.payload_array.append({
+                        "dict": payload,
+                        "image": image_data
+                    })
                 except Exception as e:
                     raise e
 

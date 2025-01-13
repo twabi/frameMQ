@@ -78,7 +78,7 @@ class FrameTransfer:
 
                     self.writer.flush()
                     self.chunk_array = []
-                    print("time taken: ", time.time() - self.start_time)
+                    #print("time taken: ", time.time() - self.start_time)
 
                 if self.stopped:
                     break

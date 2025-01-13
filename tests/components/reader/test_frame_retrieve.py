@@ -1,11 +1,13 @@
 import json
+import time
 import unittest
 
 from kafka import KafkaConsumer
 
+from main.agent.writer.writer import Writer
 from main.components.reader.frame_decode import FrameDecode
 from main.components.reader.frame_retrieve import FrameRetrieve
-from main.models.models import RetrieveParams
+from main.models.models import RetrieveParams, WriterParams
 
 
 class TestFrameRetrieve(unittest.TestCase):
@@ -32,5 +34,33 @@ class TestFrameRetrieve(unittest.TestCase):
             ),
             frame_decode=FrameDecode()
         )
+
+        self.writer = Writer(
+            params=WriterParams(
+                brokers=[
+                    '133.41.117.50:9092', '133.41.117.50:9093',
+                    '133.41.117.50:9094', '133.41.117.50:9095'
+                ],
+                topic='video-trans',
+                encoder_type='turbojpeg'
+            )
+        )
+
+
+    def test_get_frame(self):
+        self.frame_retrieve.start()
+        self.writer.start()
+
+        time.sleep(15)
+
+        self.frame_retrieve.stop()
+        self.writer.stop()
+
+        print(
+            self.frame_retrieve.payload_array
+        )
+
+        self.assertTrue(len(self.frame_retrieve.payload_array) > 0)
+        self.assertTrue(self.frame_retrieve.stopped)
 
 

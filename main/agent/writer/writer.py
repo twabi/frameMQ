@@ -24,7 +24,7 @@ class Writer:
         self.encode_params = EncodeParams(
             encoder_type=params.encoder_type,
             quality=quality,
-            chunk_num=10
+            chunk_num=1
         )
 
         producer = KafkaProducer(
