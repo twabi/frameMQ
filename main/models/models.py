@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from typing import List, Callable, Any, Optional
 
 from kafka import KafkaProducer, KafkaConsumer
+import paho.mqtt.client as mqtt
 
 from main.utils.enums import CompressionType
 
@@ -108,7 +109,8 @@ class TransferParams:
     frame_number: int
     frame: List[bytes]
     topic: str
-    writer: KafkaProducer
+    writer: KafkaProducer | mqtt.Client
+    writer_type: str = 'kafka'
 
     def update(self, quality: int, level: int, brokers: List[str],
                partitions: int, frame_number: int, frame: List[bytes], topic: str):
@@ -124,16 +126,20 @@ class WriterParams:
     brokers: List[str]
     topic: str
     encoder_type: Optional[str] = 'turbojpeg'
+    writer_type: str = 'kafka'
+
 
 
 @dataclass
 class RetrieveParams:
     topic: str
-    reader: KafkaConsumer
+    reader: KafkaConsumer | mqtt.Client
+    reader_type: str = 'kafka'
 
 @dataclass
 class ReaderParams:
     brokers: List[str]
     topic: str
     group_id: str
+    reader_type:str = 'kafka'
 

@@ -8,15 +8,18 @@ from main.models.models import WriterParams, ReaderParams
 
 class TestReader(unittest.TestCase):
     def setUp(self):
+        reader_type = 'kafka'
+        brokers = [
+            '133.41.117.50:9092', '133.41.117.50:9093',
+            '133.41.117.50:9094', '133.41.117.50:9095'
+        ] if reader_type == 'kafka' else ['133.41.117.94:1884']
 
         self.reader = Reader(
             params=ReaderParams(
                 group_id='y-group',
-                brokers=[
-                    '133.41.117.50:9092', '133.41.117.50:9093',
-                    '133.41.117.50:9094', '133.41.117.50:9095'
-                ],
-                topic='video-trans'
+                brokers=brokers,
+                topic='video-trans',
+                reader_type=reader_type
             )
         )
 

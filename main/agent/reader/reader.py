@@ -3,6 +3,7 @@ import threading
 from queue import Queue, Empty, Full
 from kafka import KafkaConsumer
 import time
+import paho.mqtt.client as mqtt
 
 from main.components.reader.frame_retrieve import FrameRetrieve
 from main.components.reader.frame_show import FrameShow
@@ -12,7 +13,8 @@ from main.models.models import ReaderParams, RetrieveParams
 class Reader:
     def __init__(self, params: ReaderParams, buffer_size: int = 100):
         # Configure Kafka consumer with optimized settings
-        self.consumer = self._create_kafka_consumer(params)
+        self.consumer = self._create_consumer(params)
+        self.topic = params.topic
 
         # Initialize state
         self.stopped = True
@@ -27,21 +29,42 @@ class Reader:
         self._lock = threading.Lock()
 
     @staticmethod
-    def _create_kafka_consumer(params: ReaderParams) -> KafkaConsumer:
-        """Create an optimized Kafka consumer."""
-        return KafkaConsumer(
-            bootstrap_servers=params.brokers,
-            auto_offset_reset='latest',
-            enable_auto_commit=False,
-            group_id=params.group_id,
-            key_deserializer=lambda x: x.decode('utf-8'),
-            value_deserializer=lambda x: json.loads(x.decode('utf-8')),
-            max_partition_fetch_bytes=10485880,
-            fetch_max_bytes=5048588,
-            fetch_max_wait_ms=5,
-            receive_buffer_bytes=10485880,
-            send_buffer_bytes=10485880
-        )
+    def _create_consumer(params: ReaderParams) -> KafkaConsumer | mqtt.Client:
+        try:
+
+            if params.reader_type not in ['kafka', 'mqtt']:
+                raise ValueError("Invalid reader type. Must be 'kafka' or 'mqtt'.")
+
+            if params.reader_type == 'mqtt':
+                broker_host = params.brokers[0].split(":")[0]
+                broker_port = int(params.brokers[0].split(":")[1])
+
+                consumer = mqtt.Client()
+                consumer.connect(broker_host, broker_port)
+
+                consumer.subscribe(params.topic)
+                return consumer
+
+            elif params.reader_type == 'kafka':
+                consumer =  KafkaConsumer(
+                    bootstrap_servers=params.brokers,
+                    auto_offset_reset='latest',
+                    enable_auto_commit=False,
+                    group_id=params.group_id,
+                    key_deserializer=lambda x: x.decode('utf-8'),
+                    value_deserializer=lambda x: json.loads(x.decode('utf-8')),
+                    max_partition_fetch_bytes=10485880,
+                    fetch_max_bytes=5048588,
+                    fetch_max_wait_ms=5,
+                    receive_buffer_bytes=10485880,
+                    send_buffer_bytes=10485880
+                )
+                consumer.subscribe([params.topic])
+                return consumer
+
+        except Exception as e:
+            print("reader: ", e)
+            raise e
 
     def _init_components(self, params: ReaderParams):
         """Initialize frame show and retrieve components."""
@@ -52,7 +75,8 @@ class Reader:
         self.frame_retrieve = FrameRetrieve(
             params=RetrieveParams(
                 reader=self.consumer,
-                topic='video-trans'
+                topic=self.topic,
+                reader_type=params.reader_type
             ),
             frame_show=self.frame_show,
             max_workers=4

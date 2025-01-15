@@ -6,14 +6,19 @@ from main.models.models import WriterParams
 
 class TestWriter(unittest.TestCase):
     def setUp(self):
-        self.writer = Writer(
-            params=WriterParams(
-                brokers=[
+
+        writer_type = 'kafka'
+        brokers = [
                     '133.41.117.50:9092', '133.41.117.50:9093',
                     '133.41.117.50:9094', '133.41.117.50:9095'
-                ],
+                ] if writer_type == 'kafka' else ['133.41.117.94:1884']
+
+        self.writer = Writer(
+            params=WriterParams(
+                brokers=brokers,
                 topic='video-trans',
-                encoder_type='turbojpeg'
+                encoder_type='turbojpeg',
+                writer_type=writer_type
             )
         )
 

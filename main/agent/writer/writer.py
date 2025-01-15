@@ -1,6 +1,7 @@
 import threading
 
 from kafka import KafkaProducer
+import paho.mqtt.client as mqtt
 from main.components.writer.frame_capture import FrameCapture
 from main.components.writer.frame_transfer import FrameTransfer
 from main.models.models import CaptureParams, EncodeParams, TransferParams, WriterParams
@@ -33,15 +34,7 @@ class Writer:
             chunk_num=100
         )
 
-        self.producer = KafkaProducer(
-            bootstrap_servers=params.brokers,
-            compression_type='zstd',
-            max_request_size=10485880,
-            batch_size=5048588,
-            linger_ms=5,
-            send_buffer_bytes=5048588,
-            receive_buffer_bytes=5048588
-        )
+        self.producer = self._create_producer(params)
 
         self.transfer_params = TransferParams(
             brokers=params.brokers,
@@ -51,8 +44,40 @@ class Writer:
             quality=quality,
             frame_number=0,
             frame=[],
-            writer=self.producer
+            writer=self.producer,
+            writer_type=params.writer_type
         )
+
+    @staticmethod
+    def _create_producer(params: WriterParams) -> KafkaProducer | mqtt.Client:
+        try:
+
+            if params.writer_type not in ['kafka', 'mqtt']:
+                raise ValueError("Invalid writer type. Must be 'kafka' or 'mqtt'.")
+
+            if params.writer_type == 'mqtt':
+                broker_host = params.brokers[0].split(":")[0]
+                broker_port = int(params.brokers[0].split(":")[1])
+
+                producer = mqtt.Client()
+                producer.connect(broker_host, broker_port)
+                return producer
+            elif params.writer_type == 'kafka':
+                producer = KafkaProducer(
+                    bootstrap_servers=params.brokers,
+                    compression_type='zstd',
+                    max_request_size=10485880,
+                    batch_size=5048588,
+                    linger_ms=5,
+                    send_buffer_bytes=5048588,
+                    receive_buffer_bytes=5048588
+                )
+                return producer
+            else:
+                raise ValueError("Invalid writer type. Must be 'kafka' or 'mqtt'.")
+        except Exception as e:
+            print("writer: ", e)
+            raise e
 
     def _initialize_components(self):
         """Initialize all components for frame capture, encode, and transfer."""

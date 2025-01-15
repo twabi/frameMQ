@@ -32,3 +32,37 @@ def jpeg_encode(encoder_type:str, frame:np.ndarray, quality:int):
         return opencv_encode(frame, quality)
     else:
         raise ValueError(f"Invalid encoder type: {encoder_type}")
+
+def sanitize_json_string(json_str):
+    """
+    Sanitize a JSON string by removing or replacing invalid control characters.
+
+    Args:
+        json_str (str): The JSON string to sanitize
+
+    Returns:
+        str: Sanitized JSON string
+    """
+    if not isinstance(json_str, str):
+        return json_str
+
+    # Define a translation table to remove or replace control characters
+    control_chars = {
+        # Remove null bytes
+        '\x00': '',
+        # Replace other common problematic control characters with spaces
+        '\x01': ' ', '\x02': ' ', '\x03': ' ', '\x04': ' ',
+        '\x05': ' ', '\x06': ' ', '\x07': ' ', '\x08': ' ',
+        '\x0b': ' ', '\x0c': ' ', '\x0e': ' ', '\x0f': ' ',
+        # Preserve valid whitespace characters
+        '\x09': '\t',  # tab
+        '\x0a': '\n',  # newline
+        '\x0d': '\r',  # carriage return
+    }
+
+    # Create a translation table
+    trans_table = str.maketrans(control_chars)
+
+    # Apply the translation
+    sanitized = json_str.translate(trans_table)
+    return sanitized

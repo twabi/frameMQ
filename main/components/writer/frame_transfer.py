@@ -22,6 +22,7 @@ class FrameTransfer:
         self.brokers = self.transfer.brokers
         self.partitions = self.transfer.partitions
         self.topic = self.transfer.topic
+        self.writer_type = self.transfer.writer_type
         self.writer = self.transfer.writer
 
         self.metrics: List[Dict[str, Any]] = []
@@ -54,30 +55,53 @@ class FrameTransfer:
     def _create_payload(self, chunk: bytes, chunk_num: int, total_chunks: int,
                         key: bytes, timestamp: int) -> Dict[str, Any]:
         """Create a single payload for a chunk"""
-        return ProducerMetric(
-            quality=self.quality,
-            message_uuid=key.decode('utf-8'),
-            message_num=self.frame_num,
-            level=self.level,
-            chunk_num=chunk_num,
-            total_chunks=total_chunks,
-            brokers=len(self.brokers),
-            partitions=self.partitions,
-            produce_time=timestamp,
-            message_size=len(chunk),
-            message=base64.b64encode(chunk).decode('utf-8')
-        ).to_dict()
+        return {
+            "quality": self.quality,
+            "message_uuid": key.decode('utf-8'),
+            "message_num": self.frame_num,
+            "level": self.level,
+            "chunk_num":chunk_num,
+            "total_chunks":total_chunks,
+            "brokers":len(self.brokers),
+            "partitions":self.partitions,
+            "produce_time":timestamp,
+            "message_size":len(chunk),
+            "message":base64.b64encode(chunk).decode('utf-8')
+        }
 
     def _send_payload(self, payload: Dict[str, Any], key: bytes) -> None:
         """Send a single payload"""
-        self.writer.send(
-            topic=self.topic,
-            value=json.dumps(payload).encode('utf-8'),
-            key=key
-        ).add_callback(self.acked)
+        try:
+            if self.writer_type == 'mqtt':
+                # Convert payload to JSON string with proper formatting
+                json_payload = json.dumps(payload, separators=(',', ':'))
 
-        # Store metrics without message content
-        self.metrics.append({k: v for k, v in payload.items() if k != "message"})
+                # Encode as UTF-8 bytes
+                encoded_payload = json_payload.encode('utf-8')
+
+                self.writer.publish(
+                    topic=self.topic,
+                    payload=encoded_payload,
+                    retain=True,
+                )
+
+                # Wait for message to be delivered
+                print(f"Published message {payload['message_uuid']}")
+
+            elif self.writer_type == 'kafka':
+                self.writer.send(
+                    topic=self.topic,
+                    value=json.dumps(payload).encode('utf-8'),
+                    key=key
+                ).add_callback(self.acked)
+            else:
+                raise ValueError("Invalid writer type. Must be 'kafka' or 'mqtt'.")
+
+            # Store metrics without message content
+            self.metrics.append({k: v for k, v in payload.items() if k != "message"})
+        except Exception as e:
+            print("Failed to send payload: ", e)
+            raise e
 
     def _transfer_loop(self) -> None:
         """Main transfer loop with optimized batch processing"""
@@ -107,7 +131,8 @@ class FrameTransfer:
                                 payloads
                             ))
                         finally:
-                            self.writer.flush()
+                            if self.writer_type == 'kafka':
+                                self.writer.flush()
                             self.chunk_array = []
 
         except Exception as e:
@@ -120,3 +145,6 @@ class FrameTransfer:
         with self._condition:
             self._condition.notify_all()
         self._executor.shutdown(wait=True)
+
+        if self.writer_type == 'mqtt':
+            self.writer.disconnect()
