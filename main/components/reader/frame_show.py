@@ -1,19 +1,22 @@
 import threading
 import time
+import gi
+gi.require_version('Gst', '1.0')  # Specify the version
 from gi.repository import Gst, GLib
+
 import cv2
-import numpy as np
 
 # Initialize GStreamer once
 Gst.init(None)
 
 class FrameShow:
-    def __init__(self):
+    def __init__(self, start_time: float):
         self.image = None
         self.payload = None
         self.stopped = False
         self.lock = threading.Lock()
         self.metrics = []
+        self.start_time = start_time
 
         # Create GStreamer pipeline with optimized settings
         self.pipeline = Gst.parse_launch(

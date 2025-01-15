@@ -1,20 +1,35 @@
 import json
 import threading
+from queue import Queue, Empty, Full
+from kafka import KafkaConsumer
 import time
 
-from kafka import KafkaProducer, KafkaConsumer
-
-from main.components.reader.frame_decode import FrameDecode
 from main.components.reader.frame_retrieve import FrameRetrieve
 from main.components.reader.frame_show import FrameShow
-from main.models.models import CaptureParams, EncodeParams, TransferParams, WriterParams, RetrieveParams, ReaderParams
-import platform
-
+from main.models.models import ReaderParams, RetrieveParams
 
 
 class Reader:
-    def __init__(self, params: ReaderParams):
-        consumer = KafkaConsumer(
+    def __init__(self, params: ReaderParams, buffer_size: int = 100):
+        # Configure Kafka consumer with optimized settings
+        self.consumer = self._create_kafka_consumer(params)
+
+        # Initialize state
+        self.stopped = True
+        self.metrics = []
+        self.image_queue = Queue(maxsize=buffer_size)
+
+        # Initialize components
+        self._init_components(params)
+
+        # Thread management
+        self.threads = []
+        self._lock = threading.Lock()
+
+    @staticmethod
+    def _create_kafka_consumer(params: ReaderParams) -> KafkaConsumer:
+        """Create an optimized Kafka consumer."""
+        return KafkaConsumer(
             bootstrap_servers=params.brokers,
             auto_offset_reset='latest',
             enable_auto_commit=False,
@@ -28,41 +43,97 @@ class Reader:
             send_buffer_bytes=10485880
         )
 
-        self.stopped = True
-        self.metrics = []
+    def _init_components(self, params: ReaderParams):
+        """Initialize frame show and retrieve components."""
+        self.frame_show = FrameShow(
+            start_time=time.time(),
+        )
 
-
-
-        self.frame_show = FrameShow()
-        self.frame_decode = FrameDecode(frame_shower=self.frame_show)
         self.frame_retrieve = FrameRetrieve(
             params=RetrieveParams(
-                reader=consumer
+                reader=self.consumer,
+                topic='video-trans'
             ),
-            frame_decode=self.frame_decode)
+            frame_show=self.frame_show,
+            max_workers=4
+        )
 
-        self.thread = None
+    def _process_frame(self) -> None:
+        """Process frames from the frame retriever."""
+        while not self.stopped:
+            try:
+                with self._lock:
+                    image = self.frame_retrieve.image
+                    data = self.frame_retrieve.data
 
-    def start(self):
+                if image is not None and data is not None:
+                    # Use non-blocking put with timeout
+                    try:
+                        self.image_queue.put((image, data), timeout=0.1)
+                    except Full:
+                        # Skip frame if queue is full
+                        continue
+
+            except Exception as e:
+                print(f"Frame processing error: {e}")
+                if not self.stopped:
+                    time.sleep(0.1)  # Prevent tight loop on error
+
+    def _display_frame(self) -> None:
+        """Display frames from the queue."""
+        while not self.stopped:
+            try:
+                # Use non-blocking get with timeout
+                image, data = self.image_queue.get(timeout=0.1)
+                self.frame_show.update_image(image, data)
+                self.metrics = self.frame_show.metrics
+
+            except Empty:
+                continue
+            except Exception as e:
+                print(f"Frame display error: {e}")
+                if not self.stopped:
+                    time.sleep(0.1)
+
+    def start(self) -> None:
+        """Start all components and processing threads."""
         self.stopped = False
-        self.frame_decode.start()
+
+        # Start components
         self.frame_retrieve.start()
         self.frame_show.start()
-        self.thread = threading.Thread(target=self.run_threads, daemon=True)
-        self.thread.start()
 
-    def run_threads(self):
-        try:
-            while not self.stopped:
-                self.metrics = self.frame_show.metrics
-        except Exception as e:
-            self.stop()
-            print("writer: ", e)
+        # Start processing threads
+        self.threads = [
+            threading.Thread(target=self._process_frame, daemon=True),
+            threading.Thread(target=self._display_frame, daemon=True)
+        ]
 
-    def stop(self):
+        for thread in self.threads:
+            thread.start()
+
+    def stop(self) -> None:
+        """Stop all components and threads."""
         self.stopped = True
+
+        # Stop components
         self.frame_show.stop()
-        self.frame_decode.stop()
         self.frame_retrieve.stop()
-        if self.thread and self.thread.is_alive():
-            self.thread.join()
+
+        # Clear queue
+        while not self.image_queue.empty():
+            try:
+                self.image_queue.get_nowait()
+            except Empty:
+                break
+
+        # Wait for threads to finish
+        for thread in self.threads:
+            if thread.is_alive():
+                thread.join(timeout=1.0)
+
+        # Close Kafka consumer
+        try:
+            self.consumer.close()
+        except Exception as e:
+            print(f"Error closing consumer: {e}")

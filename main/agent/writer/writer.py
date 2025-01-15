@@ -1,9 +1,7 @@
 import threading
-import time
 
 from kafka import KafkaProducer
 from main.components.writer.frame_capture import FrameCapture
-from main.components.writer.frame_encode import FrameEncode
 from main.components.writer.frame_transfer import FrameTransfer
 from main.models.models import CaptureParams, EncodeParams, TransferParams, WriterParams
 import platform
@@ -11,6 +9,14 @@ import platform
 
 class Writer:
     def __init__(self, params: WriterParams):
+        self._initialize_params(params)
+        self._initialize_components()
+        self.stopped = True
+        self.metrics = []
+        self.thread = None
+
+    def _initialize_params(self, params: WriterParams):
+        """Initialize all parameters for the Writer."""
         current_platform = platform.system().lower()
         self.capture_params = CaptureParams(
             source=0,
@@ -20,14 +26,14 @@ class Writer:
             level=1
         )
 
-        quality = 80
+        quality = 90
         self.encode_params = EncodeParams(
             encoder_type=params.encoder_type,
             quality=quality,
-            chunk_num=1
+            chunk_num=100
         )
 
-        producer = KafkaProducer(
+        self.producer = KafkaProducer(
             bootstrap_servers=params.brokers,
             compression_type='zstd',
             max_request_size=10485880,
@@ -36,6 +42,7 @@ class Writer:
             send_buffer_bytes=5048588,
             receive_buffer_bytes=5048588
         )
+
         self.transfer_params = TransferParams(
             brokers=params.brokers,
             topic=params.topic,
@@ -44,26 +51,23 @@ class Writer:
             quality=quality,
             frame_number=0,
             frame=[],
-            writer=producer
+            writer=self.producer
         )
 
-        self.stopped = True
-        self.metrics = []
-
+    def _initialize_components(self):
+        """Initialize all components for frame capture, encode, and transfer."""
         self.frame_transfer = FrameTransfer(
-            start_time=time.time(),
-            transfer=self.transfer_params)
-        self.frame_encode = FrameEncode(frame=None, params=self.encode_params,
-                                        frame_transfer=self.frame_transfer)
-        self.frame_capture = FrameCapture(params=self.capture_params,
-                                          frame_encoder=self.frame_encode)
-
-        self.thread = None
+            start_time=0,
+            transfer=self.transfer_params
+        )
+        self.frame_capture = FrameCapture(
+            capture_params=self.capture_params,
+            encode_params=self.encode_params
+        )
 
     def start(self):
         self.stopped = False
         self.frame_capture.start()
-        self.frame_encode.start()
         self.frame_transfer.start()
         self.thread = threading.Thread(target=self.run_threads, daemon=True)
         self.thread.start()
@@ -72,6 +76,8 @@ class Writer:
         try:
             while not self.stopped:
                 self.metrics = self.frame_transfer.metrics
+                self.frame_transfer.update_frame(
+                    self.frame_capture.chunk_array, self.frame_capture.frame_num)
         except Exception as e:
             self.stop()
             print("writer: ", e)
@@ -79,7 +85,6 @@ class Writer:
     def stop(self):
         self.stopped = True
         self.frame_capture.stop()
-        self.frame_encode.stop()
         self.frame_transfer.stop()
         if self.thread and self.thread.is_alive():
             self.thread.join()

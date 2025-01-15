@@ -3,89 +3,120 @@ import base64
 import uuid
 import time
 import json
+from typing import List, Dict, Any
+from dataclasses import dataclass
+from concurrent.futures import ThreadPoolExecutor
 from main.models.models import TransferParams, ProducerMetric
 
 
+@dataclass
 class FrameTransfer:
-    def __init__(self, transfer:TransferParams, start_time:float):
-        self.start_time = start_time
-        self.chunk_array = transfer.frame
-        self.quality = transfer.quality
-        self.frame_num = transfer.frame_number
-        self.level = transfer.level
-        self.brokers = transfer.brokers
-        self.partitions = transfer.partitions
-        self.topic = transfer.topic
+    transfer: TransferParams
+    start_time: float
 
-        self.writer = transfer.writer
+    def __post_init__(self):
+        self.chunk_array = self.transfer.frame
+        self.quality = self.transfer.quality
+        self.frame_num = self.transfer.frame_number
+        self.level = self.transfer.level
+        self.brokers = self.transfer.brokers
+        self.partitions = self.transfer.partitions
+        self.topic = self.transfer.topic
+        self.writer = self.transfer.writer
 
-        self.metrics = []
-        self.ack_array = []
+        self.metrics: List[Dict[str, Any]] = []
+        self.ack_array: List[Any] = []
 
-        self.condition = Condition()
-        self.stopped = True
+        self._condition = Condition()
+        self._stopped = True
+        self._executor = ThreadPoolExecutor(max_workers=4)  # Adjust based on needs
 
-    def acked(self, payload):
-        if payload is None:
-            print("Failed to send message.")
-        else:
+    def acked(self, payload: Any) -> None:
+        """Callback for successful message delivery"""
+        if payload is not None:
             self.ack_array.append(payload)
+        else:
+            print("Failed to send message.")
 
-    def start(self):
-        self.stopped = False
-        Thread(target=self.transfer, daemon=True).start()
+    def start(self) -> 'FrameTransfer':
+        """Start the transfer process"""
+        self._stopped = False
+        Thread(target=self._transfer_loop, daemon=True).start()
         return self
 
-    def update_frame(self, new_frame: bytes, frame_num: int):
-        """Update the frame with a new frame and its number"""
-        with self.condition:
+    def update_frame(self, new_frame: bytes, frame_num: int) -> None:
+        """Update the frame with new data"""
+        with self._condition:
             self.chunk_array = new_frame
             self.frame_num = frame_num
-            self.condition.notify()
+            self._condition.notify()
 
-    def transfer(self):
+    def _create_payload(self, chunk: bytes, chunk_num: int, total_chunks: int,
+                        key: bytes, timestamp: int) -> Dict[str, Any]:
+        """Create a single payload for a chunk"""
+        return ProducerMetric(
+            quality=self.quality,
+            message_uuid=key.decode('utf-8'),
+            message_num=self.frame_num,
+            level=self.level,
+            chunk_num=chunk_num,
+            total_chunks=total_chunks,
+            brokers=len(self.brokers),
+            partitions=self.partitions,
+            produce_time=timestamp,
+            message_size=len(chunk),
+            message=base64.b64encode(chunk).decode('utf-8')
+        ).to_dict()
+
+    def _send_payload(self, payload: Dict[str, Any], key: bytes) -> None:
+        """Send a single payload"""
+        self.writer.send(
+            topic=self.topic,
+            value=json.dumps(payload).encode('utf-8'),
+            key=key
+        ).add_callback(self.acked)
+
+        # Store metrics without message content
+        self.metrics.append({k: v for k, v in payload.items() if k != "message"})
+
+    def _transfer_loop(self) -> None:
+        """Main transfer loop with optimized batch processing"""
         try:
-            while not self.stopped:
-                with self.condition:
-                    self.condition.wait_for(lambda: len(self.chunk_array) > 0 or self.stopped)
-                    if self.stopped:
-                        break
-                    key = str(uuid.uuid1()).encode('utf-8')
-                    time_stamp = int(time.time() * 1000)
+            while not self._stopped:
+                with self._condition:
+                    # Wait for new data or stop signal
+                    if self._condition.wait_for(lambda: len(self.chunk_array) > 0 or self._stopped, timeout=1.0):
+                        if self._stopped:
+                            break
 
-                    payloads = [
-                        ProducerMetric(
-                            quality = self.quality,
-                            message_uuid = key.decode('utf-8'),
-                            message_num = self.frame_num,
-                            level = self.level,
-                            chunk_num = i,
-                            total_chunks= len(self.chunk_array),
-                            brokers = len(self.brokers),
-                            partitions = self.partitions,
-                            produce_time = time_stamp,
-                            message_size = len(chunk),
-                            message = base64.b64encode(chunk).decode('utf-8')
-                    ).to_dict() for i, chunk in enumerate(self.chunk_array)]
+                        key = str(uuid.uuid1()).encode('utf-8')
+                        timestamp = int(time.time() * 1000)
+                        chunks = self.chunk_array
+                        total_chunks = len(chunks)
 
-                    for payload in payloads:
-                        self.writer.send(
-                            topic=self.topic,
-                            value=json.dumps(payload).encode('utf-8'),
-                            key=key
-                        ).add_callback(self.acked)
-                        self.metrics.append({k: v for k, v in payload.items() if k != "message"})
+                        # Create all payloads first
+                        payloads = [
+                            self._create_payload(chunk, i, total_chunks, key, timestamp)
+                            for i, chunk in enumerate(chunks)
+                        ]
 
-                    self.writer.flush()
-                    self.chunk_array = []
-                    #print("time taken: ", time.time() - self.start_time)
-
-                if self.stopped:
-                    break
+                        # Send payloads in parallel
+                        try:
+                            list(self._executor.map(
+                                lambda p: self._send_payload(p, key),
+                                payloads
+                            ))
+                        finally:
+                            self.writer.flush()
+                            self.chunk_array = []
 
         except Exception as e:
             self.stop()
             raise e
 
-    def stop(self):
-        self.stopped = True
+    def stop(self) -> None:
+        """Stop the transfer process and clean up resources"""
+        self._stopped = True
+        with self._condition:
+            self._condition.notify_all()
+        self._executor.shutdown(wait=True)

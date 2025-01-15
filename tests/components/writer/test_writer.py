@@ -27,7 +27,7 @@ class TestWriter(unittest.TestCase):
 
     def test_write(self):
         self.writer.start()
-        time.sleep(15)  # Simulate some runtime
+        time.sleep(100)  # Simulate some runtime
         self.writer.stop()
 
         print(
