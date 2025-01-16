@@ -137,6 +137,8 @@ class NetworkManagerPSO:
         self.frame_size = message_size
         self.latency = latency
 
+        print(f"Updated params: quality={quality}, level={level}, chunk_number={chunk_number}, message_size={message_size}, latency={latency}")
+
     @lru_cache(maxsize=128)
     def get_consumer_group_info(self):
         try:
@@ -234,12 +236,12 @@ class NetworkManagerPSO:
 
     def monitor_and_adjust(self):
         while not self.stopped:
-            logging.info(F"Current latency: {self.latency}")
+
 
             latency_ratio = (self.latency - self.TARGET_LATENCY) / self.TARGET_LATENCY
 
             while latency_ratio > self.LATENCY_THRESHOLD:
-
+                logging.info(F"Current latency: {self.latency}")
                 self.number_of_consumers = self.get_consumer_group_info()
                 self.number_of_partitions = self.get_topic_info()
 

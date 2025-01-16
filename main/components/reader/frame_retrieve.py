@@ -119,19 +119,6 @@ class FrameRetrieve:
                 # check if the message.payload bytes are valid start, continuation, or end bytes before json.loads
                 print(payload)
                 self.process_message(payload)
-            """# Try to decode the message payload
-            try:
-                #decoded_payload = message.payload.decode('utf-8')
-                payload = json.loads(decoded_payload)
-                self.process_message(payload)
-            except UnicodeDecodeError:
-                # If UTF-8 decode fails, try direct JSON loading
-                try:
-                    payload = json.loads(message.payload)
-                    self.process_message(payload)
-                except json.JSONDecodeError:
-                    print("Failed to decode message payload")
-                    return"""
         except Exception as e:
             print(f"Error processing message: {e}")
 
@@ -141,7 +128,6 @@ class FrameRetrieve:
             for msg in self.reader:
                 if self.stopped:
                     break
-                print(f"Received message '{msg.topic}': {msg.value}")
                 payload = msg.value
                 self.process_message(payload)
 

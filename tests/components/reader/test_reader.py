@@ -19,7 +19,8 @@ class TestReader(unittest.TestCase):
                 group_id='y-group',
                 brokers=brokers,
                 topic='video-trans',
-                reader_type=reader_type
+                reader_type=reader_type,
+                optimizer='none'
             )
         )
 

@@ -25,6 +25,21 @@ class Reader:
 
         # Initialize components
         self._init_components(params)
+        self.optimizer = None
+        if params.optimizer == 'pso':
+            self.optimizer = NetworkManagerPSO(
+                params=PSOParams(
+                    num_particles=10,
+                    tracked_params=TrackedParams(),
+                    optimize_target_params=OptimizeTargetParams(),
+                    general_params=GeneralParams(
+                        consumer_group='y-group',
+                        brokers=params.brokers,
+                        reader_type=params.reader_type
+                    )
+                )
+            )
+
 
         # Thread management
         self.threads = []
@@ -84,19 +99,7 @@ class Reader:
             max_workers=4
         )
 
-        if params.optimizer == 'pso':
-            self.optimizer = NetworkManagerPSO(
-                params=PSOParams(
-                    num_particles=20,
-                    tracked_params=TrackedParams(),
-                    optimize_target_params=OptimizeTargetParams(),
-                    general_params=GeneralParams(
-                        consumer_group='y-group',
-                        brokers=params.brokers,
-                        reader_type=params.reader_type
-                    )
-                )
-            )
+
 
     def _process_frame(self) -> None:
         """Process frames from the frame retriever."""
@@ -130,9 +133,9 @@ class Reader:
                 if self.optimizer is not None and data is not None:
                     self.optimizer.update_params(quality=data['quality'],
                                                  level=data['level'],
-                                                 chunk_number=data['chunk_number'],
+                                                 chunk_number=data['chunk_num'],
                                                  message_size=data['message_size'],
-                                                 latency=data['latency'])
+                                                 latency=(data['consume_time'] - data['produce_time']))
 
                 self.metrics = self.frame_show.metrics
 
