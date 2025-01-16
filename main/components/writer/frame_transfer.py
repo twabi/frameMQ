@@ -52,6 +52,7 @@ class FrameTransfer:
             self.frame_num = frame_num
             self._condition.notify()
 
+
     def _create_payload(self, chunk: bytes, chunk_num: int, total_chunks: int,
                         key: bytes, timestamp: int) -> Dict[str, Any]:
         """Create a single payload for a chunk"""

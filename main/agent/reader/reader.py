@@ -7,7 +7,9 @@ import paho.mqtt.client as mqtt
 
 from main.components.reader.frame_retrieve import FrameRetrieve
 from main.components.reader.frame_show import FrameShow
-from main.models.models import ReaderParams, RetrieveParams
+from main.models.models import ReaderParams, RetrieveParams, PSOParams, TrackedParams, OptimizeTargetParams, \
+    GeneralParams
+from main.optimizers.PSO.pso import NetworkManagerPSO
 
 
 class Reader:
@@ -82,6 +84,20 @@ class Reader:
             max_workers=4
         )
 
+        if params.optimizer == 'pso':
+            self.optimizer = NetworkManagerPSO(
+                params=PSOParams(
+                    num_particles=20,
+                    tracked_params=TrackedParams(),
+                    optimize_target_params=OptimizeTargetParams(),
+                    general_params=GeneralParams(
+                        consumer_group='y-group',
+                        brokers=params.brokers,
+                        reader_type=params.reader_type
+                    )
+                )
+            )
+
     def _process_frame(self) -> None:
         """Process frames from the frame retriever."""
         while not self.stopped:
@@ -110,6 +126,14 @@ class Reader:
                 # Use non-blocking get with timeout
                 image, data = self.image_queue.get(timeout=0.1)
                 self.frame_show.update_image(image, data)
+
+                if self.optimizer is not None and data is not None:
+                    self.optimizer.update_params(quality=data['quality'],
+                                                 level=data['level'],
+                                                 chunk_number=data['chunk_number'],
+                                                 message_size=data['message_size'],
+                                                 latency=data['latency'])
+
                 self.metrics = self.frame_show.metrics
 
             except Empty:
@@ -127,6 +151,9 @@ class Reader:
         self.frame_retrieve.start()
         self.frame_show.start()
 
+        if self.optimizer is not None:
+            self.optimizer.start()
+
         # Start processing threads
         self.threads = [
             threading.Thread(target=self._process_frame, daemon=True),
@@ -143,6 +170,9 @@ class Reader:
         # Stop components
         self.frame_show.stop()
         self.frame_retrieve.stop()
+
+        if self.optimizer is not None:
+            self.optimizer.stop()
 
         # Clear queue
         while not self.image_queue.empty():

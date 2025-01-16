@@ -59,6 +59,11 @@ class FrameCapture:
         Thread(target=self.capture, daemon=True).start()
         return self
 
+    def update_params(self, chunk_number, quality, level):
+        self.chunk_num = chunk_number
+        self.quality = quality
+        self.level = level
+
     def encode(self, frame, frame_num):
         try:
             with self.lock:

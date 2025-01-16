@@ -127,6 +127,7 @@ class WriterParams:
     topic: str
     encoder_type: Optional[str] = 'turbojpeg'
     writer_type: str = 'kafka'
+    optimizer: str = 'none'
 
 
 
@@ -142,4 +143,53 @@ class ReaderParams:
     topic: str
     group_id: str
     reader_type:str = 'kafka'
+    optimizer: str = 'none'
+
+@dataclass
+class OptimizeTargetParams:
+    FRAME_THRESHOLD:int = 50000
+    TARGET_RATIO:float  = 0.08
+    TARGET_LATENCY:int  = 60
+    TARGET_QUALITY:int  = 55
+    TARGET_PARTITIONS:int  = 300
+    TARGET_CHUNKS:int  = 500
+    # this is the level of aspect ratio of
+    # the video where 0 is the lowest and 2 the highest
+    TARGET_LEVEL:float  = 1.001
+    LATENCY_THRESHOLD:float  = 0.5
+
+@dataclass
+class TrackedParams:
+    # metrics from the consumer
+    latency: int = 0
+    frame_size: int = 0
+    quality: int = 50
+    current_level: int = 1
+    chunk_number: int = 5
+
+
+@dataclass
+class GeneralParams:
+    # kafka parameters
+    consumer_group: str
+    brokers: List[str]
+    monitored_topic: str = "video-trans"
+    sleep_interval: int = 5
+    update_threshold: float = 0.7
+    reader_type: str = 'kafka'
+
+@dataclass
+class PSOParams:
+    tracked_params: TrackedParams
+    optimize_target_params: OptimizeTargetParams
+    general_params: GeneralParams
+
+    num_particles: int = 10
+    inertia_weight: float = 0.5
+    cognitive_coeff: float = 1.0
+    social_coeff: float = 2.0
+
+
+
+
 
