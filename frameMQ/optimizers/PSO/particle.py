@@ -19,7 +19,7 @@ class Particle:
         self.p_best = float('inf')  # Start with the lowest fitness
         self.p_best_position = self.position.copy()  # Store the position corresponding to p_best
 
-        # Global best (g_best) will be handled by the main PSO class
+        # Global best (g_best) will be handled by the frameMQ PSO class
         self.g_best_position = g_best_position.copy() if g_best_position else None
 
     def update_velocity(self, w, c1, c2):

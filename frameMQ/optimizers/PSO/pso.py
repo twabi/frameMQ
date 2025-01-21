@@ -8,8 +8,8 @@ import logging
 from concurrent.futures import ThreadPoolExecutor
 from functools import lru_cache
 
-from main.models.models import PSOParams
-from main.optimizers.PSO.particle import Particle
+from frameMQ.models.models import PSOParams
+from frameMQ.optimizers.PSO.particle import Particle
 
 logging.basicConfig(
     level=logging.INFO,

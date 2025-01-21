@@ -2,9 +2,9 @@ from threading import Thread, Lock
 
 import cv2
 
-from main.models.models import CaptureParams, EncodeParams
+from frameMQ.models.models import CaptureParams, EncodeParams
 from concurrent.futures import ThreadPoolExecutor
-from main.utils.helper import split_bytes, jpeg_encode
+from frameMQ.utils.helper import split_bytes, jpeg_encode
 
 
 

@@ -1,9 +1,8 @@
 import time
 import unittest
 
-from main.agent.reader.reader import Reader
-from main.agent.writer.writer import Writer
-from main.models.models import WriterParams, ReaderParams
+from frameMQ.agent.reader import Reader
+from frameMQ.models.models import ReaderParams
 
 
 class TestReader(unittest.TestCase):

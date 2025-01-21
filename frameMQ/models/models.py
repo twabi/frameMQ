@@ -5,7 +5,7 @@ from typing import List, Callable, Any, Optional
 from kafka import KafkaProducer, KafkaConsumer
 import paho.mqtt.client as mqtt
 
-from main.utils.enums import CompressionType
+from frameMQ.utils.enums import CompressionType
 
 
 @dataclass

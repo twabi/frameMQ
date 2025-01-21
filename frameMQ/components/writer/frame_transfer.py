@@ -6,7 +6,7 @@ import json
 from typing import List, Dict, Any
 from dataclasses import dataclass
 from concurrent.futures import ThreadPoolExecutor
-from main.models.models import TransferParams, ProducerMetric
+from frameMQ.models.models import TransferParams, ProducerMetric
 
 
 @dataclass

@@ -1,7 +1,7 @@
 import time
 import unittest
-from main.agent.writer.writer import Writer
-from main.models.models import WriterParams
+from frameMQ.agent.writer import Writer
+from frameMQ.models.models import WriterParams
 
 
 class TestWriter(unittest.TestCase):

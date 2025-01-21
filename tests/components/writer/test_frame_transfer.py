@@ -1,8 +1,8 @@
 import unittest
 import time
 from kafka import KafkaProducer
-from main.models.models import TransferParams
-from main.components.writer.frame_transfer import FrameTransfer
+from frameMQ.models.models import TransferParams
+from frameMQ.components.writer.frame_transfer import FrameTransfer
 
 
 class TestFrameTransfer(unittest.TestCase):

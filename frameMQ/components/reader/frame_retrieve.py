@@ -6,9 +6,9 @@ from collections import defaultdict
 from turbojpeg import TurboJPEG, TJPF_BGR
 from concurrent.futures import ThreadPoolExecutor
 from typing import Optional, Dict
-from main.components.reader.frame_show import FrameShow
-from main.models.models import RetrieveParams
-from main.utils.helper import sanitize_json_string
+from frameMQ.components.reader.frame_show import FrameShow
+from frameMQ.models.models import RetrieveParams
+from frameMQ.utils.helper import sanitize_json_string
 
 
 class FrameRetrieve:

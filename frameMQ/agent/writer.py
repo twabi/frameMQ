@@ -3,10 +3,10 @@ import threading
 
 from kafka import KafkaProducer, KafkaConsumer
 import paho.mqtt.client as mqtt
-from main.components.writer.frame_capture import FrameCapture
-from main.components.writer.frame_transfer import FrameTransfer
-from main.components.writer.notif_consumer import NotifConsumer
-from main.models.models import CaptureParams, EncodeParams, TransferParams, WriterParams
+from frameMQ.components.writer.frame_capture import FrameCapture
+from frameMQ.components.writer.frame_transfer import FrameTransfer
+from frameMQ.components.writer.notif_consumer import NotifConsumer
+from frameMQ.models.models import CaptureParams, EncodeParams, TransferParams, WriterParams
 import platform
 
 
@@ -17,6 +17,7 @@ class Writer:
         self.stopped = True
         self.metrics = []
         self.thread = None
+        self.notif_consumer = None
 
     def _initialize_params(self, params: WriterParams):
         """Initialize all parameters for the Writer."""

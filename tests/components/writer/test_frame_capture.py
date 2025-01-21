@@ -1,8 +1,8 @@
 import time
 import unittest
 
-from main.components.writer.frame_capture import FrameCapture
-from main.models.models import CaptureParams
+from frameMQ.components.writer.frame_capture import FrameCapture
+from frameMQ.models.models import CaptureParams
 
 
 class TestFrameCapture(unittest.TestCase):

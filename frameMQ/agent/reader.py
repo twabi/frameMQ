@@ -5,11 +5,11 @@ from kafka import KafkaConsumer
 import time
 import paho.mqtt.client as mqtt
 
-from main.components.reader.frame_retrieve import FrameRetrieve
-from main.components.reader.frame_show import FrameShow
-from main.models.models import ReaderParams, RetrieveParams, PSOParams, TrackedParams, OptimizeTargetParams, \
+from frameMQ.components.reader.frame_retrieve import FrameRetrieve
+from frameMQ.components.reader.frame_show import FrameShow
+from frameMQ.models.models import ReaderParams, RetrieveParams, PSOParams, TrackedParams, OptimizeTargetParams, \
     GeneralParams
-from main.optimizers.PSO.pso import NetworkManagerPSO
+from frameMQ.optimizers.PSO.pso import NetworkManagerPSO
 
 
 class Reader:

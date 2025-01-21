@@ -4,10 +4,10 @@ import unittest
 
 from kafka import KafkaConsumer
 
-from main.agent.writer.writer import Writer
-from main.components.reader.frame_decode import FrameDecode
-from main.components.reader.frame_retrieve import FrameRetrieve
-from main.models.models import RetrieveParams, WriterParams
+from frameMQ.agent.writer import Writer
+from frameMQ.components.reader.frame_decode import FrameDecode
+from frameMQ.components.reader.frame_retrieve import FrameRetrieve
+from frameMQ.models.models import RetrieveParams, WriterParams
 
 
 class TestFrameRetrieve(unittest.TestCase):
