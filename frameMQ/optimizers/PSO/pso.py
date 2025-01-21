@@ -140,15 +140,6 @@ class NetworkManagerPSO:
         print(f"Updated params: quality={quality}, level={level}, chunk_number={chunk_number}, message_size={message_size}, latency={latency}")
 
     @lru_cache(maxsize=128)
-    def get_consumer_group_info(self):
-        try:
-            group_description = self.admin_client.describe_consumer_groups([self.consumer_group])
-            return len(group_description[0].members) if group_description else 0
-        except Exception as e:
-            logging.error(f"Error fetching consumer group info: {e}")
-            return 0
-
-    @lru_cache(maxsize=128)
     def get_topic_info(self):
         try:
             topic_info = self.admin_client.describe_topics([self.monitored_topic])
@@ -171,7 +162,7 @@ class NetworkManagerPSO:
         try:
             existing_topics = self.admin_client.list_topics()
             if topic_name in existing_topics:
-                current_partitions = self.get_topic_info()
+                current_partitions = self.number_of_partitions
                 self.number_of_partitions = current_partitions
                 if num_partitions > current_partitions:
                     self.admin_client.create_partitions({
@@ -242,9 +233,6 @@ class NetworkManagerPSO:
 
             while latency_ratio > self.LATENCY_THRESHOLD:
                 logging.info(F"Current latency: {self.latency}")
-                self.number_of_consumers = self.get_consumer_group_info()
-                self.number_of_partitions = self.get_topic_info()
-
                 if self.latency <= 0:
                     logging.info("Latency is 0. Skipping optimization.")
                     time.sleep(0.1)
@@ -272,13 +260,15 @@ class NetworkManagerPSO:
         new_quality = int(position['quality'])
         new_level = int(position['level'])
 
-        current_partitions = self.get_topic_info()
+        current_parts = self.number_of_partitions
 
         logging.info(
             f"Optimized conditions: parts:{new_partitions}, chunk:{new_chunks}, qual:{new_quality}, lvl:{new_level}")
 
         self.notify_producer_consumer(new_partitions, new_chunks, new_quality, new_level)
-        self.create_or_alter_topic(self.monitored_topic, new_partitions)
+
+        if current_parts < new_partitions < self.TARGET_PARTITIONS:
+            self.create_or_alter_topic(self.monitored_topic, new_partitions)
 
     def _process_particle(self, particle):
         """Process individual particle updates"""

@@ -130,13 +130,6 @@ class Reader:
                 image, data = self.image_queue.get(timeout=0.1)
                 self.frame_show.update_image(image, data)
 
-                if self.optimizer is not None and data is not None:
-                    self.optimizer.update_params(quality=data['quality'],
-                                                 level=data['level'],
-                                                 chunk_number=data['chunk_num'],
-                                                 message_size=data['message_size'],
-                                                 latency=(data['consume_time'] - data['produce_time']))
-
                 self.metrics = self.frame_show.metrics
 
             except Empty:
@@ -145,6 +138,25 @@ class Reader:
                 print(f"Frame display error: {e}")
                 if not self.stopped:
                     time.sleep(0.1)
+
+    def _process_optimizer_updates(self) -> None:
+        """Process updates from the optimizer."""
+        while not self.stopped:
+            if self.optimizer is not None:
+                try:
+                    data = self.frame_retrieve.data
+                    if self.optimizer is not None and data is not None:
+                        self.optimizer.update_params(
+                            quality=data['quality'],
+                            level=data['level'],
+                            chunk_number=data['chunk_num'],
+                            message_size=data['message_size'],
+                            latency=(data['consume_time'] - data['produce_time'])
+                        )
+                except Exception as e:
+                    print(f"Optimizer update error: {e}")
+                    if not self.stopped:
+                        time.sleep(0.1)
 
     def start(self) -> None:
         """Start all components and processing threads."""
@@ -160,7 +172,8 @@ class Reader:
         # Start processing threads
         self.threads = [
             threading.Thread(target=self._process_frame, daemon=True),
-            threading.Thread(target=self._display_frame, daemon=True)
+            threading.Thread(target=self._display_frame, daemon=True),
+            #threading.Thread(target=self._process_optimizer_updates, daemon=True)
         ]
 
         for thread in self.threads:

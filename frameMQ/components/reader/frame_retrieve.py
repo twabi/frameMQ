@@ -129,6 +129,7 @@ class FrameRetrieve:
                 if self.stopped:
                     break
                 payload = msg.value
+                # print(payload)
                 self.process_message(payload)
 
     def start(self):

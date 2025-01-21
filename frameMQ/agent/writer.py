@@ -129,14 +129,13 @@ class Writer:
                 self.frame_transfer.update_frame(
                     self.frame_capture.chunk_array, self.frame_capture.frame_num)
 
-                if self.notif_consumer is not None:
-                    if self.notif_consumer.notif is not None:
-                        self.frame_capture.update_params(
-                            quality=self.notif_consumer.notif['quality'],
-                            chunk_number=self.notif_consumer.notif['chunk_num'],
-                            level=self.notif_consumer.notif['level']
-                        )
-                        self.frame_transfer.partitions = self.notif_consumer.notif['partitions']
+                if self.notif_consumer is not None and self.notif_consumer.notif is not None:
+                    self.frame_capture.update_params(
+                        quality=self.notif_consumer.notif['quality'],
+                        chunk_number=self.notif_consumer.notif['chunk_num'],
+                        level=self.notif_consumer.notif['level']
+                    )
+                    self.frame_transfer.partitions = self.notif_consumer.notif['partitions']
         except Exception as e:
             self.stop()
             print("writer: ", e)

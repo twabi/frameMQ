@@ -36,6 +36,7 @@ class FrameTransfer:
         """Callback for successful message delivery"""
         if payload is not None:
             self.ack_array.append(payload)
+            print(f"Message delivered to topic.")
         else:
             print("Failed to send message.")
 
