@@ -127,6 +127,7 @@ class WriterParams:
     encoder_type: Optional[str] = 'turbojpeg'
     writer_type: str = 'kafka'
     optimizer: str = 'none'
+    source: int = 0
 
 
 

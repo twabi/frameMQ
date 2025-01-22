@@ -1,5 +1,6 @@
 import json
 import threading
+import time
 
 from kafka import KafkaProducer, KafkaConsumer
 import paho.mqtt.client as mqtt
@@ -8,7 +9,15 @@ from frameMQ.components.writer.frame_transfer import FrameTransfer
 from frameMQ.components.writer.notif_consumer import NotifConsumer
 from frameMQ.models.models import CaptureParams, EncodeParams, TransferParams, WriterParams
 import platform
+import logging
 
+
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s [%(levelname)s] %(message)s',
+    handlers=[logging.StreamHandler()]
+)
 
 class Writer:
     def __init__(self, params: WriterParams):
@@ -23,7 +32,7 @@ class Writer:
         """Initialize all parameters for the Writer."""
         current_platform = platform.system().lower()
         self.capture_params = CaptureParams(
-            source=0,
+            source=params.source,
             fps=30,
             codec="h264",
             platform=current_platform,
@@ -123,6 +132,7 @@ class Writer:
     def run_threads(self):
         try:
             while not self.stopped:
+                logging.info("Writer running")
                 self.metrics = self.frame_transfer.metrics
                 self.frame_transfer.update_frame(
                     self.frame_capture.chunk_array, self.frame_capture.frame_num)
@@ -130,6 +140,8 @@ class Writer:
                 if self.notif_consumer is not None and self.notif_consumer.notif is not None:
                     self.frame_transfer.partitions = self.notif_consumer.notif['num_partitions']
                     self.frame_capture.update_params(self.notif_consumer.notif['chunks'], self.notif_consumer.notif['quality'], self.notif_consumer.notif['level'])
+
+                time.sleep(0.15)
         except Exception as e:
             self.stop()
             print("writer: ", e)

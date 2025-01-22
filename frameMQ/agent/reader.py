@@ -124,11 +124,10 @@ class Reader:
                     except Full:
                         # Skip frame if queue is full
                         continue
-
             except Exception as e:
                 print(f"Frame processing error: {e}")
-                if not self.stopped:
-                    time.sleep(0.1)  # Prevent tight loop on error
+
+            time.sleep(0.1)
 
     def _display_frame(self) -> None:
         """Display frames from the queue."""

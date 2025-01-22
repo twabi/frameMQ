@@ -96,10 +96,14 @@ class FrameCapture:
             with ThreadPoolExecutor(max_workers=4) as executor:
                 while not self.stopped:
                     ret, frame = self.cap.read()
+
                     with self.lock:
-                        local_frame = frame.copy()
-                        local_frame_num = self.frame_num
-                        self.frame_num += 1
+                        if frame is None:
+                            continue
+                        else:
+                            local_frame = frame.copy()
+                            local_frame_num = self.frame_num
+                            self.frame_num += 1
 
                     executor.submit(self.encode, local_frame, local_frame_num)
 
