@@ -71,13 +71,8 @@ class FrameCapture:
                 current_frame_num = frame_num
                 current_frame = frame
 
+            print(f"Encoding frame {self.chunk_num} chunks, quality {self.quality}")
             if current_frame is not None and current_frame_num > self.last_processed_frame_num:
-                if not (0 <= self.quality <= 100):
-                    raise ValueError("Quality must be between 0 and 100")
-
-                if self.encoder_type not in ["turbojpeg", "opencv"]:
-                    raise ValueError("Invalid encoder type")
-
                 # print(f"Encoding frame {self.chunk_num} chunks, quality {self.quality}")
                 buffer = jpeg_encode(self.encoder_type, current_frame, self.quality)
                 chunks = split_bytes(buffer, self.chunk_num)
@@ -91,7 +86,17 @@ class FrameCapture:
     def capture(self):
         try:
             if not self.cap.isOpened():
+                self.stop()
                 raise Exception("Could not open video device")
+
+            if not (0 <= self.quality <= 100):
+                print(f"Quality must be between 0 and 100")
+                self.stop()
+                raise ValueError("Quality must be between 0 and 100")
+
+            if self.encoder_type not in ["turbojpeg", "opencv"]:
+                self.stop()
+                raise ValueError("Invalid encoder type")
 
             with ThreadPoolExecutor(max_workers=4) as executor:
                 while not self.stopped:

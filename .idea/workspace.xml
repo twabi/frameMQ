@@ -6,10 +6,12 @@
   <component name="ChangeListManager">
     <list default="true" id="9a8bbc17-ecce-43d7-9c17-85abe7043a90" name="Changes" comment="minor clean ups">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frameMQ/agent/reader.py" beforeDir="false" afterPath="$PROJECT_DIR$/frameMQ/agent/reader.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frameMQ/agent/writer.py" beforeDir="false" afterPath="$PROJECT_DIR$/frameMQ/agent/writer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frameMQ/components/reader/frame_retrieve.py" beforeDir="false" afterPath="$PROJECT_DIR$/frameMQ/components/reader/frame_retrieve.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frameMQ/components/writer/frame_capture.py" beforeDir="false" afterPath="$PROJECT_DIR$/frameMQ/components/writer/frame_capture.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frameMQ/components/writer/frame_transfer.py" beforeDir="false" afterPath="$PROJECT_DIR$/frameMQ/components/writer/frame_transfer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frameMQ/models/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/frameMQ/models/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/components/reader/test_frame_retrieve.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/components/reader/test_frame_retrieve.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/components/writer/test_frame_capture.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/components/writer/test_frame_capture.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/components/writer/test_frame_transfer.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/components/writer/test_frame_transfer.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -47,35 +49,39 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Python tests.Python tests for test_frame_capture.TestFrameCapture.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Python tests for test_frame_capture.TestFrameCapture.test_capture_lifecycle.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Python tests for test_frame_capture.TestFrameCapture.test_get_dimensions.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Python tests for test_frame_capture.TestFrameCapture.test_initialization.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Python tests for test_frame_capture.TestFrameCapture.test_pipeline_string.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Python tests for test_frame_decode.TestFrameDecode.test_decode.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Python tests for test_frame_encode.TestFrameEncode.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Python tests for test_frame_encode.TestFrameEncode.test_multiple_frame_updates.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Python tests for test_frame_retrieve.TestFrameRetrieve.test_get_frame.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Python tests for test_frame_transfer.TestFrameTransfer.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Python tests for test_reader.TestReader.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Python tests for test_reader.TestReader.test_write_read.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Python tests for test_writer.TestWriter.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Python tests for test_writer.TestWriter.test_write.executor&quot;: &quot;Run&quot;,
-    &quot;Python.agent.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Python tests.Python tests for test_frame_capture.TestFrameCapture.executor": "Run",
+    "Python tests.Python tests for test_frame_capture.TestFrameCapture.test_capture_lifecycle.executor": "Run",
+    "Python tests.Python tests for test_frame_capture.TestFrameCapture.test_get_dimensions.executor": "Run",
+    "Python tests.Python tests for test_frame_capture.TestFrameCapture.test_initialization.executor": "Run",
+    "Python tests.Python tests for test_frame_capture.TestFrameCapture.test_invalid_quality_value.executor": "Run",
+    "Python tests.Python tests for test_frame_capture.TestFrameCapture.test_pipeline_string.executor": "Run",
+    "Python tests.Python tests for test_frame_decode.TestFrameDecode.test_decode.executor": "Run",
+    "Python tests.Python tests for test_frame_encode.TestFrameEncode.executor": "Run",
+    "Python tests.Python tests for test_frame_encode.TestFrameEncode.test_multiple_frame_updates.executor": "Run",
+    "Python tests.Python tests for test_frame_retrieve.TestFrameRetrieve.executor": "Run",
+    "Python tests.Python tests for test_frame_retrieve.TestFrameRetrieve.test_chunked_message_processing.executor": "Run",
+    "Python tests.Python tests for test_frame_retrieve.TestFrameRetrieve.test_get_frame.executor": "Run",
+    "Python tests.Python tests for test_frame_retrieve.TestFrameRetrieve.test_invalid_message_handling.executor": "Run",
+    "Python tests.Python tests for test_frame_transfer.TestFrameTransfer.executor": "Run",
+    "Python tests.Python tests for test_reader.TestReader.executor": "Run",
+    "Python tests.Python tests for test_reader.TestReader.test_write_read.executor": "Run",
+    "Python tests.Python tests for test_writer.TestWriter.executor": "Run",
+    "Python tests.Python tests for test_writer.TestWriter.test_write.executor": "Run",
+    "Python.agent.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "main",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "preferences.pluginManager",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/frameMQ/agent" />
@@ -85,7 +91,7 @@
       <recent name="$PROJECT_DIR$/platform/agent" />
     </key>
   </component>
-  <component name="RunManager" selected="Python tests.Python tests for test_reader.TestReader.test_write_read">
+  <component name="RunManager" selected="Python tests.Python tests for test_pso.TestNetworkManagerPSO">
     <configuration name="Python tests for test_frame_decode.TestFrameDecode.test_decode" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
       <module name="FrameMQ" />
       <option name="ENV_FILES" value="" />
@@ -102,7 +108,7 @@
       <option name="_new_targetType" value="&quot;PYTHON&quot;" />
       <method v="2" />
     </configuration>
-    <configuration name="Python tests for test_frame_decode.TestFrameDecode.test_decode" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
+    <configuration name="Python tests for test_frame_retrieve.TestFrameRetrieve" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
       <module name="FrameMQ" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -114,11 +120,11 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;test_frame_decode.TestFrameDecode.test_decode&quot;" />
+      <option name="_new_target" value="&quot;test_frame_retrieve.TestFrameRetrieve&quot;" />
       <option name="_new_targetType" value="&quot;PYTHON&quot;" />
       <method v="2" />
     </configuration>
-    <configuration name="Python tests for test_reader.TestReader" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
+    <configuration name="Python tests for test_frame_retrieve.TestFrameRetrieve.test_chunked_message_processing" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
       <module name="FrameMQ" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -130,7 +136,55 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;test_reader.TestReader&quot;" />
+      <option name="_new_target" value="&quot;test_frame_retrieve.TestFrameRetrieve.test_chunked_message_processing&quot;" />
+      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Python tests for test_frame_retrieve.TestFrameRetrieve.test_invalid_message_handling" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
+      <module name="FrameMQ" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tests/components/reader" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;test_frame_retrieve.TestFrameRetrieve.test_invalid_message_handling&quot;" />
+      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Python tests for test_frame_show.TestFrameShow" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
+      <module name="FrameMQ" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tests/components/reader" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;test_frame_show.TestFrameShow&quot;" />
+      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Python tests for test_pso.TestNetworkManagerPSO" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
+      <module name="FrameMQ" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tests/optimizers" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;test_pso.TestNetworkManagerPSO&quot;" />
       <option name="_new_targetType" value="&quot;PYTHON&quot;" />
       <method v="2" />
     </configuration>
@@ -166,22 +220,6 @@
       <option name="_new_targetType" value="&quot;PYTHON&quot;" />
       <method v="2" />
     </configuration>
-    <configuration name="Python tests for test_reader.TestReader.test_write_read" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
-      <module name="FrameMQ" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tests/components/reader" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;test_reader.TestReader.test_write_read&quot;" />
-      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
-      <method v="2" />
-    </configuration>
     <configuration name="Python tests for test_writer.TestWriter.test_write" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
       <module name="FrameMQ" />
       <option name="ENV_FILES" value="" />
@@ -195,38 +233,6 @@
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="_new_additionalArguments" value="&quot;&quot;" />
       <option name="_new_target" value="&quot;test_writer.TestWriter.test_write&quot;" />
-      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
-      <method v="2" />
-    </configuration>
-    <configuration name="Python tests for test_writer.TestWriter.test_write" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
-      <module name="FrameMQ" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tests/components/writer" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;test_writer.TestWriter.test_write&quot;" />
-      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
-      <method v="2" />
-    </configuration>
-    <configuration name="Python tests for tests.components.reader.test_frame_retrieve.TestFrameRetrieve.test_get_frame" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
-      <module name="FrameMQ" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tests/components" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;tests.components.reader.test_frame_retrieve.TestFrameRetrieve.test_get_frame&quot;" />
       <option name="_new_targetType" value="&quot;PYTHON&quot;" />
       <method v="2" />
     </configuration>
@@ -248,11 +254,11 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python tests.Python tests for test_writer.TestWriter.test_write" />
-        <item itemvalue="Python tests.Python tests for test_reader.TestReader.test_write_read" />
-        <item itemvalue="Python tests.Python tests for test_reader.TestReader" />
-        <item itemvalue="Python tests.Python tests for test_frame_decode.TestFrameDecode.test_decode" />
-        <item itemvalue="Python tests.Python tests for tests.components.reader.test_frame_retrieve.TestFrameRetrieve.test_get_frame" />
+        <item itemvalue="Python tests.Python tests for test_pso.TestNetworkManagerPSO" />
+        <item itemvalue="Python tests.Python tests for test_frame_show.TestFrameShow" />
+        <item itemvalue="Python tests.Python tests for test_frame_retrieve.TestFrameRetrieve.test_chunked_message_processing" />
+        <item itemvalue="Python tests.Python tests for test_frame_retrieve.TestFrameRetrieve" />
+        <item itemvalue="Python tests.Python tests for test_frame_retrieve.TestFrameRetrieve.test_invalid_message_handling" />
       </list>
     </recent_temporary>
   </component>
@@ -280,7 +286,7 @@
       <workItem from="1736997236684" duration="6320000" />
       <workItem from="1737428588739" duration="2703000" />
       <workItem from="1737431301870" duration="4194000" />
-      <workItem from="1737515941384" duration="7513000" />
+      <workItem from="1737515941384" duration="10433000" />
     </task>
     <task id="LOCAL-00001" summary="added other packages, started with frame capture">
       <option name="closed" value="true" />
@@ -402,7 +408,15 @@
       <option name="project" value="LOCAL" />
       <updated>1737523925224</updated>
     </task>
-    <option name="localTasksCounter" value="16" />
+    <task id="LOCAL-00016" summary="minor clean ups">
+      <option name="closed" value="true" />
+      <created>1737524804654</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1737524804654</updated>
+    </task>
+    <option name="localTasksCounter" value="17" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -434,6 +448,6 @@
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/FrameMQ$agent.coverage" NAME="agent Coverage Results" MODIFIED="1734933580247" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/platform" />
-    <SUITE FILE_PATH="coverage/FrameMQ$.coverage" NAME=" Coverage Results" MODIFIED="1737523455479" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tests/components/writer" />
+    <SUITE FILE_PATH="coverage/FrameMQ$.coverage" NAME=" Coverage Results" MODIFIED="1737531975087" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tests/components/reader" />
   </component>
 </project>

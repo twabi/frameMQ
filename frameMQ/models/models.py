@@ -40,18 +40,11 @@ class CaptureParams:
     platform: str = 'linux'
     level:int = 1
 
-    def update_level(self, level: int):
-        self.level = level
-
 @dataclass
 class EncodeParams:
     encoder_type: str
     quality: int
     chunk_num: int
-
-    def update(self, quality: int, chunk_num: int):
-        self.quality = quality
-        self.chunk_num = chunk_num
 
 @dataclass
 class ProducerMetric:

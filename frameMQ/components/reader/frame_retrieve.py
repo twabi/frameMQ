@@ -91,8 +91,10 @@ class FrameRetrieve:
             payload = msg
             payload['consume_time'] = time.time() * 1000
 
-            # Decode base64 more efficiently
-            image_data = base64.b64decode(payload["message"], validate=False)
+            try:
+                image_data = base64.b64decode(payload["message"], validate=True)
+            except (base64.binascii.Error, TypeError):
+                return
 
             # Submit chunk processing to thread pool
             self.thread_pool.submit(self.add_chunk, payload, image_data)
@@ -116,7 +118,7 @@ class FrameRetrieve:
         try:
             if self.is_valid_utf8(message.payload):
                 payload = json.loads(message.payload.decode('utf-8'))
-                # check if the message.payload bytes are valid start, continuation, or end bytes before json.loads
+
                 print(payload)
                 self.process_message(payload)
         except Exception as e:
