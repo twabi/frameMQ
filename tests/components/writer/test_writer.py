@@ -18,7 +18,8 @@ class TestWriter(unittest.TestCase):
                 brokers=brokers,
                 topic='video-trans',
                 encoder_type='turbojpeg',
-                writer_type=writer_type
+                writer_type=writer_type,
+                optimizer='pso'
             )
         )
 

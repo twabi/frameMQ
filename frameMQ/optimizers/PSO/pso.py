@@ -115,6 +115,11 @@ class NetworkManagerPSO:
         logging.info("NetworkManagerPSO started.")
         return self
 
+    def test(self):
+        while True:
+            print("Hello")
+            time.sleep(1)
+
     def stop(self):
         self.stopped = True
         try:
@@ -131,13 +136,14 @@ class NetworkManagerPSO:
             logging.info("Kafka clients closed. NetworkManagerPSO stopped.")
 
     def update_params(self, quality: int, level: int, chunk_number: int, message_size: int, latency: int):
-        self.quality = quality
-        self.current_level = level
-        self.chunk_number = chunk_number
-        self.frame_size = message_size
-        self.latency = latency
+        with self.lock:
+            self.quality = quality
+            self.current_level = level
+            self.chunk_number = chunk_number
+            self.frame_size = message_size
+            self.latency = latency
 
-        print(f"Updated params: quality={quality}, level={level}, chunk_number={chunk_number}, message_size={message_size}, latency={latency}")
+            print(f"Updated params: quality={quality}, level={level}, chunk_number={chunk_number}, message_size={message_size}, latency={latency}")
 
     @lru_cache(maxsize=128)
     def get_topic_info(self):
@@ -227,8 +233,6 @@ class NetworkManagerPSO:
 
     def monitor_and_adjust(self):
         while not self.stopped:
-
-
             latency_ratio = (self.latency - self.TARGET_LATENCY) / self.TARGET_LATENCY
 
             while latency_ratio > self.LATENCY_THRESHOLD:

@@ -17,6 +17,7 @@ class Reader:
         # Configure Kafka consumer with optimized settings
         self.consumer = self._create_consumer(params)
         self.topic = params.topic
+        self.params = params
 
         # Initialize state
         self.stopped = True
@@ -76,7 +77,6 @@ class Reader:
                     receive_buffer_bytes=10485880,
                     send_buffer_bytes=10485880
                 )
-                consumer.subscribe([params.topic])
                 return consumer
 
         except Exception as e:
@@ -113,6 +113,14 @@ class Reader:
                     # Use non-blocking put with timeout
                     try:
                         self.image_queue.put((image, data), timeout=0.1)
+
+                        if self.optimizer is not None:
+                            self.optimizer.quality = data['quality']
+                            self.optimizer.current_level = data['level']
+                            self.optimizer.chunk_number = data['chunk_num']
+                            self.optimizer.frame_size = data['message_size']
+                            self.optimizer.latency = (data['consume_time'] - data['produce_time'])
+
                     except Full:
                         # Skip frame if queue is full
                         continue
@@ -139,24 +147,6 @@ class Reader:
                 if not self.stopped:
                     time.sleep(0.1)
 
-    def _process_optimizer_updates(self) -> None:
-        """Process updates from the optimizer."""
-        while not self.stopped:
-            if self.optimizer is not None:
-                try:
-                    data = self.frame_retrieve.data
-                    if self.optimizer is not None and data is not None:
-                        self.optimizer.update_params(
-                            quality=data['quality'],
-                            level=data['level'],
-                            chunk_number=data['chunk_num'],
-                            message_size=data['message_size'],
-                            latency=(data['consume_time'] - data['produce_time'])
-                        )
-                except Exception as e:
-                    print(f"Optimizer update error: {e}")
-                    if not self.stopped:
-                        time.sleep(0.1)
 
     def start(self) -> None:
         """Start all components and processing threads."""
@@ -166,14 +156,13 @@ class Reader:
         self.frame_retrieve.start()
         self.frame_show.start()
 
-        if self.optimizer is not None:
+        if self.params.optimizer != 'none':
             self.optimizer.start()
 
         # Start processing threads
         self.threads = [
             threading.Thread(target=self._process_frame, daemon=True),
             threading.Thread(target=self._display_frame, daemon=True),
-            #threading.Thread(target=self._process_optimizer_updates, daemon=True)
         ]
 
         for thread in self.threads:
@@ -187,7 +176,7 @@ class Reader:
         self.frame_show.stop()
         self.frame_retrieve.stop()
 
-        if self.optimizer is not None:
+        if self.params.optimizer != 'none':
             self.optimizer.stop()
 
         # Clear queue

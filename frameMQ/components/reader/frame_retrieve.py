@@ -19,12 +19,15 @@ class FrameRetrieve:
         self.frame_num = 0
         self.frame_show = frame_show
         self.topic = params.topic
+
         self.reader = params.reader
         self.reader_type = params.reader_type
 
         if self.reader_type == 'mqtt':
             self.reader.on_message = self.on_message_mqtt
             self.reader.enable_logger()
+        else:
+            self.reader.subscribe([self.topic])
 
         self.chunks: Dict[str, Dict] = defaultdict(dict)
         self.image = None
@@ -88,6 +91,7 @@ class FrameRetrieve:
         try:
             payload = msg
             payload['consume_time'] = time.time() * 1000
+            print("Payload: ", payload)
 
             # Decode base64 more efficiently
             image_data = base64.b64decode(payload["message"], validate=False)
@@ -125,6 +129,7 @@ class FrameRetrieve:
     def on_message_kafka(self):
         """Main message processing loop."""
         while not self.stopped:
+            print("Reading messages...")
             for msg in self.reader:
                 if self.stopped:
                     break

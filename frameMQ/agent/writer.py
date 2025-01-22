@@ -14,10 +14,10 @@ class Writer:
     def __init__(self, params: WriterParams):
         self._initialize_params(params)
         self._initialize_components(params)
+        self.params = params
         self.stopped = True
         self.metrics = []
         self.thread = None
-        self.notif_consumer = None
 
     def _initialize_params(self, params: WriterParams):
         """Initialize all parameters for the Writer."""
@@ -92,23 +92,21 @@ class Writer:
             capture_params=self.capture_params,
             encode_params=self.encode_params
         )
-
-        if params.optimizer == 'pso':
-            self.notif_consumer = NotifConsumer(
-                writer_type=params.writer_type,
-                reader=KafkaConsumer(
-                         bootstrap_servers=params.brokers,
-                        auto_offset_reset='latest',
-                        enable_auto_commit=False,
-                        group_id='b-group',
-                        value_deserializer=lambda x: json.loads(x.decode('utf-8')),
-                        max_partition_fetch_bytes=10485880,
-                        fetch_max_bytes=10485880,
-                        fetch_max_wait_ms=1,
-                        receive_buffer_bytes=10485880,
-                        send_buffer_bytes=10485880
-                    )
-            )
+        self.notif_consumer = NotifConsumer(
+            writer_type=params.writer_type,
+            reader=KafkaConsumer(
+                    bootstrap_servers=params.brokers,
+                    auto_offset_reset='latest',
+                    enable_auto_commit=False,
+                    group_id='b-group',
+                    value_deserializer=lambda x: json.loads(x.decode('utf-8')),
+                    max_partition_fetch_bytes=10485880,
+                    fetch_max_bytes=10485880,
+                    fetch_max_wait_ms=1,
+                    receive_buffer_bytes=10485880,
+                    send_buffer_bytes=10485880
+                )
+        )
 
 
     def start(self):
@@ -116,7 +114,7 @@ class Writer:
         self.frame_capture.start()
         self.frame_transfer.start()
 
-        if self.notif_consumer is not None:
+        if self.params.optimizer != 'none':
             self.notif_consumer.start()
 
         self.thread = threading.Thread(target=self.run_threads, daemon=True)
@@ -130,12 +128,8 @@ class Writer:
                     self.frame_capture.chunk_array, self.frame_capture.frame_num)
 
                 if self.notif_consumer is not None and self.notif_consumer.notif is not None:
-                    self.frame_capture.update_params(
-                        quality=self.notif_consumer.notif['quality'],
-                        chunk_number=self.notif_consumer.notif['chunk_num'],
-                        level=self.notif_consumer.notif['level']
-                    )
-                    self.frame_transfer.partitions = self.notif_consumer.notif['partitions']
+                    self.frame_transfer.partitions = self.notif_consumer.notif['num_partitions']
+                    self.frame_capture.update_params(self.notif_consumer.notif['chunks'], self.notif_consumer.notif['quality'], self.notif_consumer.notif['level'])
         except Exception as e:
             self.stop()
             print("writer: ", e)
@@ -145,7 +139,7 @@ class Writer:
         self.frame_capture.stop()
         self.frame_transfer.stop()
 
-        if self.notif_consumer is not None:
+        if self.params.optimizer != 'none':
             self.notif_consumer.stop()
 
         if self.thread and self.thread.is_alive():

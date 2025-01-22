@@ -60,9 +60,10 @@ class FrameCapture:
         return self
 
     def update_params(self, chunk_number, quality, level):
-        self.chunk_num = chunk_number
-        self.quality = quality
-        self.level = level
+        with self.lock:
+            self.chunk_num = chunk_number
+            self.quality = quality
+            self.level = level
 
     def encode(self, frame, frame_num):
         try:
@@ -77,6 +78,7 @@ class FrameCapture:
                 if self.encoder_type not in ["turbojpeg", "opencv"]:
                     raise ValueError("Invalid encoder type")
 
+                print(f"Encoding frame {self.chunk_num} chunks, quality {self.quality}")
                 buffer = jpeg_encode(self.encoder_type, current_frame, self.quality)
                 chunks = split_bytes(buffer, self.chunk_num)
 

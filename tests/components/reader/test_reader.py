@@ -19,7 +19,7 @@ class TestReader(unittest.TestCase):
                 brokers=brokers,
                 topic='video-trans',
                 reader_type=reader_type,
-                optimizer='none'
+                optimizer='pso'
             )
         )
 
