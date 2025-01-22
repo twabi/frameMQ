@@ -8,7 +8,6 @@ from concurrent.futures import ThreadPoolExecutor
 from typing import Optional, Dict
 from frameMQ.components.reader.frame_show import FrameShow
 from frameMQ.models.models import RetrieveParams
-from frameMQ.utils.helper import sanitize_json_string
 
 
 class FrameRetrieve:
@@ -91,7 +90,6 @@ class FrameRetrieve:
         try:
             payload = msg
             payload['consume_time'] = time.time() * 1000
-            print("Payload: ", payload)
 
             # Decode base64 more efficiently
             image_data = base64.b64decode(payload["message"], validate=False)
@@ -116,8 +114,6 @@ class FrameRetrieve:
     def on_message_mqtt(self, client, userdata, message):
         """Callback for MQTT messages."""
         try:
-            print(f"Received message '{type(message.topic)}': {type(message.payload)}")
-            print(self.is_valid_utf8(message.payload))
             if self.is_valid_utf8(message.payload):
                 payload = json.loads(message.payload.decode('utf-8'))
                 # check if the message.payload bytes are valid start, continuation, or end bytes before json.loads
@@ -129,7 +125,6 @@ class FrameRetrieve:
     def on_message_kafka(self):
         """Main message processing loop."""
         while not self.stopped:
-            print("Reading messages...")
             for msg in self.reader:
                 if self.stopped:
                     break

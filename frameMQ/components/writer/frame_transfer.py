@@ -6,7 +6,7 @@ import json
 from typing import List, Dict, Any
 from dataclasses import dataclass
 from concurrent.futures import ThreadPoolExecutor
-from frameMQ.models.models import TransferParams, ProducerMetric
+from frameMQ.models.models import TransferParams
 
 
 @dataclass
@@ -36,9 +36,6 @@ class FrameTransfer:
         """Callback for successful message delivery"""
         if payload is not None:
             self.ack_array.append(payload)
-
-        else:
-            print("Failed to send message.")
 
     def start(self) -> 'FrameTransfer':
         """Start the transfer process"""
@@ -88,7 +85,7 @@ class FrameTransfer:
                 )
 
                 # Wait for message to be delivered
-                print(f"Published message {payload['message_uuid']}")
+                # print(f"Published message {payload['message_uuid']}")
 
             elif self.writer_type == 'kafka':
                 self.writer.send(

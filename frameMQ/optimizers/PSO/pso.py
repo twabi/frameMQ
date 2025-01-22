@@ -115,10 +115,6 @@ class NetworkManagerPSO:
         logging.info("NetworkManagerPSO started.")
         return self
 
-    def test(self):
-        while True:
-            print("Hello")
-            time.sleep(1)
 
     def stop(self):
         self.stopped = True
@@ -142,8 +138,6 @@ class NetworkManagerPSO:
             self.chunk_number = chunk_number
             self.frame_size = message_size
             self.latency = latency
-
-            print(f"Updated params: quality={quality}, level={level}, chunk_number={chunk_number}, message_size={message_size}, latency={latency}")
 
     @lru_cache(maxsize=128)
     def get_topic_info(self):

@@ -37,7 +37,6 @@ class TestFrameCapture(unittest.TestCase):
                 self.assertEqual(result, expected)
 
     def test_capture_lifecycle(self):
-        print("Starting the test")
         capture = FrameCapture(self.params)
 
         self.assertTrue(capture.stopped)

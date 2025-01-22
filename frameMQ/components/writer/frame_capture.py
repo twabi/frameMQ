@@ -78,7 +78,7 @@ class FrameCapture:
                 if self.encoder_type not in ["turbojpeg", "opencv"]:
                     raise ValueError("Invalid encoder type")
 
-                print(f"Encoding frame {self.chunk_num} chunks, quality {self.quality}")
+                # print(f"Encoding frame {self.chunk_num} chunks, quality {self.quality}")
                 buffer = jpeg_encode(self.encoder_type, current_frame, self.quality)
                 chunks = split_bytes(buffer, self.chunk_num)
 

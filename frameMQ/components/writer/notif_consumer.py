@@ -65,7 +65,6 @@ class NotifConsumer:
 
     def on_message_mqtt(self, client, userdata, message):
         try:
-            print(f"Received message '{type(message.topic)}': {type(message.payload)}")
             with self.lock:
                 self.notif = message.payload
         except Exception as e:
