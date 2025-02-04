@@ -4,11 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="9a8bbc17-ecce-43d7-9c17-85abe7043a90" name="Changes" comment="making pso work with mqtt">
+    <list default="true" id="9a8bbc17-ecce-43d7-9c17-85abe7043a90" name="Changes" comment="added MIT license">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frameMQ/models/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/frameMQ/models/models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/setup.py" beforeDir="false" afterPath="$PROJECT_DIR$/setup.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -285,7 +283,7 @@
       <workItem from="1736997236684" duration="6320000" />
       <workItem from="1737428588739" duration="2703000" />
       <workItem from="1737431301870" duration="4194000" />
-      <workItem from="1737515941384" duration="20528000" />
+      <workItem from="1737515941384" duration="21379000" />
     </task>
     <task id="LOCAL-00001" summary="added other packages, started with frame capture">
       <option name="closed" value="true" />
@@ -431,7 +429,39 @@
       <option name="project" value="LOCAL" />
       <updated>1738647632933</updated>
     </task>
-    <option name="localTasksCounter" value="19" />
+    <task id="LOCAL-00019" summary="added a readMe">
+      <option name="closed" value="true" />
+      <created>1738650199524</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1738650199524</updated>
+    </task>
+    <task id="LOCAL-00020" summary="added MIT license">
+      <option name="closed" value="true" />
+      <created>1738650319179</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1738650319179</updated>
+    </task>
+    <task id="LOCAL-00021" summary="added MIT license">
+      <option name="closed" value="true" />
+      <created>1738650362272</created>
+      <option name="number" value="00021" />
+      <option name="presentableId" value="LOCAL-00021" />
+      <option name="project" value="LOCAL" />
+      <updated>1738650362272</updated>
+    </task>
+    <task id="LOCAL-00022" summary="added MIT license">
+      <option name="closed" value="true" />
+      <created>1738650563581</created>
+      <option name="number" value="00022" />
+      <option name="presentableId" value="LOCAL-00022" />
+      <option name="project" value="LOCAL" />
+      <updated>1738650563581</updated>
+    </task>
+    <option name="localTasksCounter" value="23" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -461,7 +491,9 @@
     <MESSAGE value="minor clean ups" />
     <MESSAGE value="added some test cases" />
     <MESSAGE value="making pso work with mqtt" />
-    <option name="LAST_COMMIT_MESSAGE" value="making pso work with mqtt" />
+    <MESSAGE value="added a readMe" />
+    <MESSAGE value="added MIT license" />
+    <option name="LAST_COMMIT_MESSAGE" value="added MIT license" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/FrameMQ$agent.coverage" NAME="agent Coverage Results" MODIFIED="1734933580247" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/platform" />

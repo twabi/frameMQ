@@ -25,99 +25,20 @@ FrameMQ is a Python library that provides a simplified architecture for real-tim
 - For video display: OpenCV with GStreamer support
 
 ### GStreamer Dependencies
-The reader component requires OpenCV built with GStreamer support. Follow these steps to set up the required dependencies:
-
-1. Install GStreamer and development packages:
-```bash
-# Ubuntu/Debian
-sudo apt-get update
-sudo apt-get install -y \
-    libgstreamer1.0-0 \
-    gstreamer1.0-plugins-base \
-    gstreamer1.0-plugins-good \
-    gstreamer1.0-plugins-bad \
-    gstreamer1.0-plugins-ugly \
-    gstreamer1.0-libav \
-    gstreamer1.0-tools \
-    gstreamer1.0-x \
-    gstreamer1.0-alsa \
-    gstreamer1.0-gl \
-    gstreamer1.0-gtk3 \
-    gstreamer1.0-qt5 \
-    gstreamer1.0-pulseaudio \
-    libgstreamer1.0-dev \
-    libgstreamer-plugins-base1.0-dev \
-    libgstreamer-plugins-good1.0-dev \
-    libgstreamer-plugins-bad1.0-dev
-```
-
-2. Install OpenCV dependencies:
-```bash
-sudo apt-get install -y \
-    build-essential \
-    cmake \
-    pkg-config \
-    python3-dev \
-    python3-numpy \
-    libtbb2 \
-    libtbb-dev \
-    libavcodec-dev \
-    libavformat-dev \
-    libswscale-dev \
-    libdc1394-22-dev \
-    libxvidcore-dev \
-    libx264-dev \
-    libgtk-3-dev \
-    libjpeg-dev \
-    libpng-dev \
-    libtiff-dev \
-    libv4l-dev \
-    v4l-utils \
-    qv4l2 \
-    libgphoto2-dev \
-    libfaac-dev \
-    libmp3lame-dev \
-    libtheora-dev \
-    libvorbis-dev \
-    libopencore-amrnb-dev \
-    libopencore-amrwb-dev \
-    libxine2-dev \
-    libtbb-dev
-```
-
-3. Build and install OpenCV with GStreamer support:
-```bash
-# Clone OpenCV and OpenCV contrib repositories
-git clone https://github.com/opencv/opencv.git
-git clone https://github.com/opencv/opencv_contrib.git
-
-# Create build directory
-cd opencv
-mkdir build
-cd build
-
-# Configure with CMake
-cmake -D CMAKE_BUILD_TYPE=RELEASE \
-    -D CMAKE_INSTALL_PREFIX=/usr/local \
-    -D OPENCV_EXTRA_MODULES_PATH=../../opencv_contrib/modules \
-    -D WITH_GSTREAMER=ON \
-    -D WITH_LIBV4L=ON \
-    -D BUILD_opencv_python3=ON \
-    -D INSTALL_PYTHON_EXAMPLES=OFF \
-    -D INSTALL_C_EXAMPLES=OFF \
-    -D OPENCV_ENABLE_NONFREE=ON \
-    -D OPENCV_PYTHON3_INSTALL_PATH=/usr/local/lib/python3.x/dist-packages \
-    -D WITH_GTK=ON \
-    -D WITH_QT=OFF \
-    -D BUILD_EXAMPLES=OFF ..
-
-# Build and install
-make -j$(nproc)
-sudo make install
-sudo ldconfig
-```
+The reader component requires OpenCV built with GStreamer support. 
 
 You can use this tutorial as a reference for building OpenCV with GStreamer support: [Building CV2 Gstreamer on Ubuntu and Windows](https://galaktyk.medium.com/how-to-build-opencv-with-gstreamer-b11668fa09c)
+
+### Requirements
+A `requirements.txt` file is provided with the repository containing all necessary Python dependencies. Key dependencies include:
+
+```text
+kafka-python==2.0.2
+paho-mqtt==1.6.1
+numpy==1.24.3
+PyTurboJPEG==1.7.2
+opencv-python  # Will be replaced by your GStreamer-enabled OpenCV build
+```
 
 ## Installation
 
@@ -139,19 +60,7 @@ pip install -r requirements.txt
 pip install -e .
 ```
 
-### Requirements
-A `requirements.txt` file is provided with the repository containing all necessary Python dependencies. Key dependencies include:
-
-```text
-kafka-python==2.0.2
-paho-mqtt==1.6.1
-numpy==1.24.3
-PyTurboJPEG==1.7.2
-opencv-python  # Will be replaced by your GStreamer-enabled OpenCV build
-```
-
 ## Quick Start
-
 ### Basic Writer Example
 
 ```python
