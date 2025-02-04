@@ -307,6 +307,6 @@ To contribute:
 5. Open a Pull Request
 
 
-## License Recommendation
+## License
 MIT License: https://opensource.org/licenses/MIT
 
