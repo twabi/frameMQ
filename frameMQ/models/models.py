@@ -135,7 +135,7 @@ class RetrieveParams:
 class ReaderParams:
     brokers: List[str]
     topic: str
-    group_id: str
+    group_id: str = 'y-group'
     reader_type:str = 'kafka'
     optimizer: str = 'none'
     notification_topic: str = 'notification'
