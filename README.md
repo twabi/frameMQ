@@ -117,6 +117,8 @@ sudo make install
 sudo ldconfig
 ```
 
+You can use this tutorial as a reference for building OpenCV with GStreamer support: [Building CV2 Gstreamer on Ubuntu and Windows](https://galaktyk.medium.com/how-to-build-opencv-with-gstreamer-b11668fa09c)
+
 ## Installation
 
 ### Using pip (once published)
