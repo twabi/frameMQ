@@ -118,8 +118,6 @@ class FrameRetrieve:
         try:
             if self.is_valid_utf8(message.payload):
                 payload = json.loads(message.payload.decode('utf-8'))
-
-                print(payload)
                 self.process_message(payload)
         except Exception as e:
             print(f"Error processing message: {e}")

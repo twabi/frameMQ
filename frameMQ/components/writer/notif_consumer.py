@@ -1,3 +1,4 @@
+import json
 import threading
 from threading import Thread
 
@@ -66,7 +67,7 @@ class NotifConsumer:
     def on_message_mqtt(self, client, userdata, message):
         try:
             with self.lock:
-                self.notif = message.payload
+                self.notif = json.loads(message.payload)
         except Exception as e:
             print(f"Error processing message: {e}")
 

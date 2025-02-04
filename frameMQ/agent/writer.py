@@ -101,21 +101,34 @@ class Writer:
             capture_params=self.capture_params,
             encode_params=self.encode_params
         )
-        self.notif_consumer = NotifConsumer(
-            writer_type=params.writer_type,
-            reader=KafkaConsumer(
-                    bootstrap_servers=params.brokers,
-                    auto_offset_reset='latest',
-                    enable_auto_commit=False,
-                    group_id='b-group',
-                    value_deserializer=lambda x: json.loads(x.decode('utf-8')),
-                    max_partition_fetch_bytes=10485880,
-                    fetch_max_bytes=10485880,
-                    fetch_max_wait_ms=1,
-                    receive_buffer_bytes=10485880,
-                    send_buffer_bytes=10485880
-                )
-        )
+        print("writer: ", params.optimizer)
+        if params.optimizer != 'none':
+
+            if params.writer_type == 'kafka':
+                notif_consumer = KafkaConsumer(
+                        bootstrap_servers=params.brokers,
+                        auto_offset_reset='latest',
+                        enable_auto_commit=False,
+                        group_id='b-group',
+                        value_deserializer=lambda x: json.loads(x.decode('utf-8')),
+                        max_partition_fetch_bytes=10485880,
+                        fetch_max_bytes=10485880,
+                        fetch_max_wait_ms=1,
+                        receive_buffer_bytes=10485880,
+                        send_buffer_bytes=10485880
+                    )
+            elif params.writer_type == 'mqtt':
+                notif_consumer = mqtt.Client()
+                notif_consumer.connect(params.brokers[0].split(":")[0], int(params.brokers[0].split(":")[1]))
+                notif_consumer.subscribe(params.notification_topic)
+
+            else:
+                raise ValueError("Invalid writer type. Must be 'kafka' or 'mqtt'.")
+
+            self.notif_consumer = NotifConsumer(
+                writer_type=params.writer_type,
+                reader=notif_consumer,
+            )
 
 
     def start(self):
@@ -137,9 +150,12 @@ class Writer:
                 self.frame_transfer.update_frame(
                     self.frame_capture.chunk_array, self.frame_capture.frame_num)
 
-                if self.notif_consumer is not None and self.notif_consumer.notif is not None:
-                    self.frame_transfer.partitions = self.notif_consumer.notif['num_partitions']
-                    self.frame_capture.update_params(self.notif_consumer.notif['chunks'], self.notif_consumer.notif['quality'], self.notif_consumer.notif['level'])
+                if self.params.optimizer != 'none':
+
+                    if self.notif_consumer.notif is not None:
+                        print("writer: ", self.notif_consumer.notif)
+                        self.frame_transfer.partitions = self.notif_consumer.notif['num_partitions'] if self.params.writer_type == 'kafka' else 1
+                        self.frame_capture.update_params(self.notif_consumer.notif['chunks'], self.notif_consumer.notif['quality'], self.notif_consumer.notif['level'])
 
                 time.sleep(0.15)
         except Exception as e:

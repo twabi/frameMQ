@@ -2,6 +2,8 @@ import threading
 import time
 import random
 import json
+import paho.mqtt.client as mqtt
+
 from kafka.admin import KafkaAdminClient, NewTopic, NewPartitions
 from kafka import KafkaProducer
 import logging
@@ -29,6 +31,7 @@ class NetworkManagerPSO:
         self.monitored_topic = params.general_params.monitored_topic
         self.sleep_interval = params.general_params.sleep_interval
         self.update_threshold = params.general_params.update_threshold
+        self.reader_type = params.general_params.reader_type
 
         self.latency = params.tracked_params.latency
         self.chunk_number = params.tracked_params.chunk_number
@@ -58,21 +61,31 @@ class NetworkManagerPSO:
         self.last_optimization = None
         self.optimization_count = 0
         self.number_of_consumers = 1
-        self.number_of_partitions = self.get_topic_info()
+        self.number_of_partitions = self.get_topic_info() if self.reader_type == 'kafka' else 1
 
         # Initialize Kafka clients with optimized settings
         brokers = params.general_params.brokers
 
         # TODO change with the writer type to also support mqtt
-        self.admin_client = KafkaAdminClient(
-            bootstrap_servers=brokers,
-            request_timeout_ms=5000,  # Reduced timeout
-            api_version_auto_timeout_ms=5000
-        )
-        self.producer = KafkaProducer(
-            bootstrap_servers=brokers,
-            value_serializer=lambda v: json.dumps(v).encode('utf-8'),
-        )
+        self.producer = None
+        if self.reader_type == 'kafka':
+            self.admin_client = KafkaAdminClient(
+                bootstrap_servers=brokers,
+                request_timeout_ms=5000,  # Reduced timeout
+                api_version_auto_timeout_ms=5000
+            )
+            self.producer = KafkaProducer(
+                bootstrap_servers=brokers,
+                value_serializer=lambda v: json.dumps(v).encode('utf-8'),
+            )
+        elif self.reader_type == 'mqtt':
+            self.admin_client = None
+            self.producer = mqtt.Client()
+            self.producer.connect(brokers[0].split(":")[0], int(brokers[0].split(":")[1]))
+
+        else:
+            raise ValueError("Invalid reader type. Must be 'kafka' or 'mqtt'.")
+
 
         # Thread pool for parallel processing
         self.thread_pool = ThreadPoolExecutor(max_workers=4)
@@ -119,16 +132,19 @@ class NetworkManagerPSO:
     def stop(self):
         self.stopped = True
         try:
-
-            self.admin_client.delete_topics(topics=[self.monitored_topic])
+            if self.admin_client is not None:
+                self.admin_client.delete_topics(topics=[self.monitored_topic])
             self.cleanup()
             logging.info(f"Deleted topic '{self.monitored_topic}'.")
         except Exception as e:
             logging.warning(f"Failed to delete topic '{self.monitored_topic}': {e}")
         finally:
             self.monitor_thread.join()
-            self.admin_client.close()
-            self.producer.close()
+            if self.reader_type == 'mqtt':
+                self.producer.disconnect()
+            elif self.reader_type == 'kafka':
+                self.admin_client.close()
+                self.producer.close()
             logging.info("Kafka clients closed. NetworkManagerPSO stopped.")
 
     def update_params(self, quality: int, level: int, chunk_number: int, message_size: int, latency: int):
@@ -219,9 +235,18 @@ class NetworkManagerPSO:
         }
 
         try:
-            self.producer.send("notification", value=message)
-            self.producer.flush()
+            if self.reader_type == 'kafka':
+                self.producer.send('notification', value=message)
+                self.producer.flush()
+
+            elif self.reader_type == 'mqtt':
+                self.producer.publish('notification', json.dumps(message))
+
+            else:
+                raise ValueError("Invalid reader type. Must be 'kafka' or 'mqtt'.")
+
             logging.info(f"Sent notification: {message}")
+
         except Exception as e:
             logging.error(f"Failed to send notification: {e}")
 
@@ -265,8 +290,9 @@ class NetworkManagerPSO:
 
         self.notify_producer_consumer(new_partitions, new_chunks, new_quality, new_level)
 
-        if current_parts < new_partitions < self.TARGET_PARTITIONS:
-            self.create_or_alter_topic(self.monitored_topic, new_partitions)
+        if self.admin_client is not None:
+            if current_parts < new_partitions < self.TARGET_PARTITIONS:
+                self.create_or_alter_topic(self.monitored_topic, new_partitions)
 
     def _process_particle(self, particle):
         """Process individual particle updates"""
@@ -306,5 +332,9 @@ class NetworkManagerPSO:
     def cleanup(self):
         """Clean up resources"""
         self.thread_pool.shutdown(wait=True)
-        self.producer.close()
-        self.admin_client.close()
+
+        if self.reader_type == 'mqtt':
+            self.producer.disconnect()
+        elif self.reader_type == 'kafka':
+            self.admin_client.close()
+            self.producer.close()

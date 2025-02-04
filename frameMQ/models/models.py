@@ -121,6 +121,7 @@ class WriterParams:
     writer_type: str = 'kafka'
     optimizer: str = 'none'
     source: int = 0
+    notification_topic: str = 'notification'
 
 
 
@@ -137,6 +138,7 @@ class ReaderParams:
     group_id: str
     reader_type:str = 'kafka'
     optimizer: str = 'none'
+    notification_topic: str = 'notification'
 
 @dataclass
 class OptimizeTargetParams:

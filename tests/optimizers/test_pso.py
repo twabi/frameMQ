@@ -11,14 +11,16 @@ from kafka.admin import KafkaAdminClient, NewTopic
 class TestNetworkManagerPSO(unittest.TestCase):
     def setUp(self):
         # Define test parameters
+        reader_type = 'kafka'
         self.params = PSOParams(
             general_params=GeneralParams(
                 consumer_group="test_group",
                 monitored_topic="test_topic",
                 brokers=['133.41.117.50:9092', '133.41.117.50:9093',
-                                   '133.41.117.50:9094', '133.41.117.50:9095'],
+                                   '133.41.117.50:9094', '133.41.117.50:9095'] if reader_type == 'kafka' else ['133.41.117.94:1884'],
                 sleep_interval=1,
-                update_threshold=0.5
+                update_threshold=0.5,
+                reader_type=reader_type
             ),
             tracked_params=TrackedParams(
                 latency=50,
@@ -98,13 +100,3 @@ class TestNetworkManagerPSO(unittest.TestCase):
         topic_name = "test_topic_new"
         success = self.manager.create_or_alter_topic(topic_name, num_partitions=3)
         assert success
-
-    def run_all_tests(self):
-        """Run all tests in sequence."""
-        self.setup_kafka()
-        self.test_start_and_stop()
-        self.test_update_params()
-        self.test_fitness_function()
-        self.test_notify_producer_consumer()
-        self.test_create_or_alter_topic()
-        print("All tests passed.")

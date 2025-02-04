@@ -7,7 +7,7 @@ from frameMQ.models.models import ReaderParams
 
 class TestReader(unittest.TestCase):
     def setUp(self):
-        reader_type = 'kafka'
+        reader_type = 'mqtt'
         brokers = [
             '133.41.117.50:9092', '133.41.117.50:9093',
             '133.41.117.50:9094', '133.41.117.50:9095'
