@@ -85,7 +85,7 @@ class FrameTransfer:
                 )
 
                 # Wait for message to be delivered
-                # print(f"Published message {payload['message_uuid']}")
+                # # print(f"Published message {payload['message_uuid']}")
 
             elif self.writer_type == 'kafka':
                 self.writer.send(
@@ -93,14 +93,14 @@ class FrameTransfer:
                     value=json.dumps(payload).encode('utf-8'),
                     key=key
                 ).add_callback(self.acked)
-                # print(f"Published message {payload['quality']}, {payload['total_chunks']}")
+                # # print(f"Published message {payload['quality']}, {payload['total_chunks']}")
             else:
                 raise ValueError("Invalid writer type. Must be 'kafka' or 'mqtt'.")
 
             # Store metrics without message content
             self.metrics.append({k: v for k, v in payload.items() if k != "message"})
         except Exception as e:
-            print("Failed to send payload: ", e)
+            # print("Failed to send payload: ", e)
             raise e
 
     def _transfer_loop(self) -> None:

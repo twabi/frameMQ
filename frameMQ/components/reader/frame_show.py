@@ -72,7 +72,7 @@ class FrameShow:
                 # Push buffer to appsrc
                 ret = self.appsrc.emit('push-buffer', buffer)
                 if ret != Gst.FlowReturn.OK:
-                    print(f"Failed to push buffer: {ret}")
+                    # print(f"Failed to push buffer: {ret}")
                     self.stop()
                     break
 

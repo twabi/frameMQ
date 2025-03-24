@@ -170,7 +170,7 @@ reader = Reader(
         optimizer='none'
     )
 )
-print(reader.metrics) # Get performance metrics
+# print(reader.metrics) # Get performance metrics
 
 ```
 
@@ -186,7 +186,7 @@ writer = Writer(
         optimizer='pso'  # Enable PSO
     )
 
-print(writer.metrics) # Get performance metrics
+# print(writer.metrics) # Get performance metrics
 ```
 
 ## Performance Considerations

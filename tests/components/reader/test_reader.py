@@ -36,7 +36,7 @@ class TestReader(unittest.TestCase):
         time.sleep(100)  # Simulate some runtime
         self.reader.stop()
 
-        print(
-            len(self.reader.metrics)
-        )
+        # print(
+            #len(self.reader.metrics)
+        #)
         self.assertTrue(len(self.reader.metrics) > 0, "Metrics should have recorded data.")

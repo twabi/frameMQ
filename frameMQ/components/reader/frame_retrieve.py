@@ -8,6 +8,15 @@ from concurrent.futures import ThreadPoolExecutor
 from typing import Optional, Dict
 from frameMQ.components.reader.frame_show import FrameShow
 from frameMQ.models.models import RetrieveParams
+import logging
+
+
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s [%(levelname)s] %(message)s',
+    handlers=[logging.StreamHandler()]
+)
 
 
 class FrameRetrieve:
@@ -50,7 +59,7 @@ class FrameRetrieve:
         try:
             return self._jpeg.decode(im_bytes, pixel_format=TJPF_BGR)
         except Exception as e:
-            print(f"Deserialization error: {e}")
+            # print(f"Deserialization error: {e}")
             return None
 
     def process_complete_message(self, message_uuid: str, chunks: Dict):
@@ -120,7 +129,7 @@ class FrameRetrieve:
                 payload = json.loads(message.payload.decode('utf-8'))
                 self.process_message(payload)
         except Exception as e:
-            print(f"Error processing message: {e}")
+            logging.info(f"Error processing message: {e}")
 
     def on_message_kafka(self):
         """Main message processing loop."""
@@ -129,7 +138,7 @@ class FrameRetrieve:
                 if self.stopped:
                     break
                 payload = msg.value
-                # print(payload)
+                # # print(payload)
                 self.process_message(payload)
 
     def start(self):
@@ -143,7 +152,7 @@ class FrameRetrieve:
             else:
                 raise ValueError("Invalid reader type. Must be 'kafka' or 'mqtt'.")
         except Exception as e:
-            print("reader: ", e)
+            # print("reader: ", e)
             raise e
 
     def stop(self):
@@ -159,5 +168,5 @@ class FrameRetrieve:
             else:
                 raise ValueError("Invalid reader type. Must be 'kafka' or 'mqtt'.")
         except Exception as e:
-            print("reader: ", e)
+            # print("reader: ", e)
             raise e

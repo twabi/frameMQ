@@ -11,12 +11,21 @@ from frameMQ.models.models import ReaderParams, RetrieveParams, PSOParams, Track
     GeneralParams
 from frameMQ.optimizers.PSO.pso import NetworkManagerPSO
 
+import logging
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s [%(levelname)s] %(message)s',
+    handlers=[logging.StreamHandler()]
+)
+
+
 
 class Reader:
     def __init__(self, params: ReaderParams, buffer_size: int = 100):
         # Configure Kafka consumer with optimized settings
         self.consumer = self._create_consumer(params)
-        print("consumer created")
+        # print("consumer created")
         self.topic = params.topic
         self.params = params
 
@@ -61,7 +70,7 @@ class Reader:
                 consumer = mqtt.Client()
                 consumer.connect(broker_host, broker_port)
 
-                print("mqtt connected and ready to subscribe")
+                # print("mqtt connected and ready to subscribe")
                 consumer.subscribe(params.topic)
                 return consumer
 
@@ -82,7 +91,7 @@ class Reader:
                 return consumer
 
         except Exception as e:
-            print("reader: ", e)
+            # print("reader: ", e)
             raise e
 
     def _init_components(self, params: ReaderParams):
@@ -112,14 +121,14 @@ class Reader:
                     data = self.frame_retrieve.data
 
                 if self.params.reader_type == 'mqtt':
-                    print("processing frame")
-                    print(data)
+                    logging.info("processing frame")
+                    # print(data)
 
                 if image is not None and data is not None:
                     # Use non-blocking put with timeout
                     try:
                         self.image_queue.put((image, data), timeout=0.1)
-                        print("looping...")
+                        # print("looping...")
 
                         if self.optimizer is not None:
                             self.optimizer.quality = data['quality']
@@ -132,7 +141,7 @@ class Reader:
                         # Skip frame if queue is full
                         continue
             except Exception as e:
-                print(f"Frame processing error: {e}")
+                logging.info(f"Frame processing error: {e}")
 
             time.sleep(0.1)
 
@@ -149,7 +158,7 @@ class Reader:
             except Empty:
                 continue
             except Exception as e:
-                print(f"Frame display error: {e}")
+                # print(f"Frame display error: {e}")
                 if not self.stopped:
                     time.sleep(0.1)
 
@@ -201,4 +210,4 @@ class Reader:
         try:
             self.consumer.close()
         except Exception as e:
-            print(f"Error closing consumer: {e}")
+            logging.info(f"Error closing consumer: {e}")

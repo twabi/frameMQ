@@ -73,7 +73,7 @@ class FrameCapture:
 
             print(f"Encoding frame {self.chunk_num} chunks, quality {self.quality}")
             if current_frame is not None and current_frame_num > self.last_processed_frame_num:
-                # print(f"Encoding frame {self.chunk_num} chunks, quality {self.quality}")
+                # # print(f"Encoding frame {self.chunk_num} chunks, quality {self.quality}")
                 buffer = jpeg_encode(self.encoder_type, current_frame, self.quality)
                 chunks = split_bytes(buffer, self.chunk_num)
 
@@ -90,7 +90,7 @@ class FrameCapture:
                 raise Exception("Could not open video device")
 
             if not (0 <= self.quality <= 100):
-                print(f"Quality must be between 0 and 100")
+                # print(f"Quality must be between 0 and 100")
                 self.stop()
                 raise ValueError("Quality must be between 0 and 100")
 

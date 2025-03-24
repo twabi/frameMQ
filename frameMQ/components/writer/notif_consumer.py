@@ -1,6 +1,15 @@
 import json
 import threading
 from threading import Thread
+import logging
+
+
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s [%(levelname)s] %(message)s',
+    handlers=[logging.StreamHandler()]
+)
 
 
 class NotifConsumer:
@@ -42,7 +51,7 @@ class NotifConsumer:
                             self.notif = msg.value
 
             except Exception as e:
-                print(f"Error in Kafka notification listener: {e}")
+                # print(f"Error in Kafka notification listener: {e}")
                 if self.stopped:
                     break
 
@@ -58,7 +67,7 @@ class NotifConsumer:
                 threading.Event().wait(0.1)
 
         except Exception as e:
-            print(f"Error in MQTT notification listener: {e}")
+            logging.info(f"Error in MQTT notification listener: {e}")
         finally:
             if self.reader:
                 self.reader.loop_stop()
@@ -69,7 +78,7 @@ class NotifConsumer:
             with self.lock:
                 self.notif = json.loads(message.payload)
         except Exception as e:
-            print(f"Error processing message: {e}")
+            logging.info(f"Error processing message: {e}")
 
     def stop(self):
         self.stopped = True
@@ -79,7 +88,7 @@ class NotifConsumer:
             try:
                 self.reader.close()
             except Exception as e:
-                print(f"Error closing Kafka consumer: {e}")
+                logging.info(f"Error closing Kafka consumer: {e}")
 
         # Wait for thread to finish with timeout
         if self.thread and self.thread.is_alive():

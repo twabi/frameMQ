@@ -88,7 +88,7 @@ class Writer:
             else:
                 raise ValueError("Invalid writer type. Must be 'kafka' or 'mqtt'.")
         except Exception as e:
-            print("writer: ", e)
+            # print("writer: ", e)
             raise e
 
     def _initialize_components(self, params: WriterParams):
@@ -101,7 +101,7 @@ class Writer:
             capture_params=self.capture_params,
             encode_params=self.encode_params
         )
-        print("writer: ", params.optimizer)
+        # print("writer: ", params.optimizer)
         if params.optimizer != 'none':
 
             if params.writer_type == 'kafka':
@@ -145,7 +145,6 @@ class Writer:
     def run_threads(self):
         try:
             while not self.stopped:
-                logging.info("Writer running")
                 self.metrics = self.frame_transfer.metrics
                 self.frame_transfer.update_frame(
                     self.frame_capture.chunk_array, self.frame_capture.frame_num)
@@ -160,7 +159,7 @@ class Writer:
                 time.sleep(0.15)
         except Exception as e:
             self.stop()
-            print("writer: ", e)
+            # print("writer: ", e)
 
     def stop(self):
         self.stopped = True

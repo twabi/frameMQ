@@ -102,7 +102,7 @@ class NetworkManagerPSO:
         self.consumer_info_cache = {}
         self.monitor_thread = None
 
-        logging.info("NetworkManagerPSO initialized with optimized settings.")
+        # logging.info("NetworkManagerPSO initialized with optimized settings.")
 
     def _initialize_bounded_particles(self):
         return [
@@ -125,7 +125,7 @@ class NetworkManagerPSO:
     def start(self):
         self.monitor_thread = threading.Thread(target=self.monitor_and_adjust, daemon=True)
         self.monitor_thread.start()
-        logging.info("NetworkManagerPSO started.")
+        # logging.info("NetworkManagerPSO started.")
         return self
 
 
@@ -135,7 +135,7 @@ class NetworkManagerPSO:
             if self.admin_client is not None:
                 self.admin_client.delete_topics(topics=[self.monitored_topic])
             self.cleanup()
-            logging.info(f"Deleted topic '{self.monitored_topic}'.")
+            # logging.info(f"Deleted topic '{self.monitored_topic}'.")
         except Exception as e:
             logging.warning(f"Failed to delete topic '{self.monitored_topic}': {e}")
         finally:
@@ -145,7 +145,7 @@ class NetworkManagerPSO:
             elif self.reader_type == 'kafka':
                 self.admin_client.close()
                 self.producer.close()
-            logging.info("Kafka clients closed. NetworkManagerPSO stopped.")
+            # logging.info("Kafka clients closed. NetworkManagerPSO stopped.")
 
     def update_params(self, quality: int, level: int, chunk_number: int, message_size: int, latency: int):
         with self.lock:
@@ -161,7 +161,7 @@ class NetworkManagerPSO:
             topic_info = self.admin_client.describe_topics([self.monitored_topic])
             return len(topic_info[0]['partitions']) if topic_info else 0
         except Exception as e:
-            logging.error(f"Error fetching topic info: {e}")
+            # logging.error(f"Error fetching topic info: {e}")
             return 1
 
     def create_or_alter_topic(self, topic_name, num_partitions):
@@ -184,7 +184,7 @@ class NetworkManagerPSO:
                     self.admin_client.create_partitions({
                         topic_name: NewPartitions(total_count=num_partitions)
                     })
-                    logging.info(f"Altered topic '{topic_name}' to have {num_partitions} partitions.")
+                    # logging.info(f"Altered topic '{topic_name}' to have {num_partitions} partitions.")
                 else:
                     logging.info(f"Topic '{topic_name}' already has {current_partitions} partitions.")
             else:
@@ -194,7 +194,7 @@ class NetworkManagerPSO:
                     replication_factor=1  # Adjust as per your Kafka cluster
                 )
                 self.admin_client.create_topics([new_topic])
-                logging.info(f"Created topic '{topic_name}' with {num_partitions} partitions.")
+                # logging.info(f"Created topic '{topic_name}' with {num_partitions} partitions.")
             return True
         except Exception as e:
             # logging.error(f"Failed to create or alter topic '{topic_name}': {e}")
@@ -245,7 +245,7 @@ class NetworkManagerPSO:
             else:
                 raise ValueError("Invalid reader type. Must be 'kafka' or 'mqtt'.")
 
-            logging.info(f"Sent notification: {message}")
+            # logging.info(f"Sent notification: {message}")
 
         except Exception as e:
             logging.error(f"Failed to send notification: {e}")
@@ -257,7 +257,7 @@ class NetworkManagerPSO:
             while latency_ratio > self.LATENCY_THRESHOLD:
                 logging.info(F"Current latency: {self.latency}")
                 if self.latency <= 0:
-                    logging.info("Latency is 0. Skipping optimization.")
+                    #logging.info("Latency is 0. Skipping optimization.")
                     time.sleep(0.1)
                     continue
 
@@ -285,8 +285,8 @@ class NetworkManagerPSO:
 
         current_parts = self.number_of_partitions
 
-        logging.info(
-            f"Optimized conditions: parts:{new_partitions}, chunk:{new_chunks}, qual:{new_quality}, lvl:{new_level}")
+        #logging.info(
+           # f"Optimized conditions: parts:{new_partitions}, chunk:{new_chunks}, qual:{new_quality}, lvl:{new_level}")
 
         self.notify_producer_consumer(new_partitions, new_chunks, new_quality, new_level)
 
@@ -324,10 +324,10 @@ class NetworkManagerPSO:
 
         self.update_self(particle.position)
 
-        logging.info(" ")
+        #logging.info(" ")
         logging.info(f"Current latency: {self.latency}")
-        logging.info(f"Particle fitness: {fitness}")
-        logging.info(f"Global best: {self.global_best}")
+        #logging.info(f"Particle fitness: {fitness}")
+        #logging.info(f"Global best: {self.global_best}")
 
     def cleanup(self):
         """Clean up resources"""

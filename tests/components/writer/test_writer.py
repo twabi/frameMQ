@@ -36,7 +36,7 @@ class TestWriter(unittest.TestCase):
         time.sleep(100)  # Simulate some runtime
         self.writer.stop()
 
-        print(
-            self.writer.metrics
-        )
+        # print(
+            #self.writer.metrics
+        #)
         self.assertTrue(len(self.writer.metrics) > 0, "Metrics should have recorded data.")
