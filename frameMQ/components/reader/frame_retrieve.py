@@ -158,7 +158,13 @@ class FrameRetrieve:
     def stop(self):
         """Stop the frame retrieval process and clean up resources."""
         self.stopped = True
-        self.thread_pool.shutdown(wait=False)
+        
+        # Shutdown thread pool with timeout
+        try:
+            self.thread_pool.shutdown(wait=True, timeout=2.0)
+        except Exception as e:
+            logging.info(f"Error shutting down thread pool: {e}")
+        
         try:
             if self.reader_type == 'kafka':
                 self.reader.close()
@@ -168,5 +174,11 @@ class FrameRetrieve:
             else:
                 raise ValueError("Invalid reader type. Must be 'kafka' or 'mqtt'.")
         except Exception as e:
-            # print("reader: ", e)
-            raise e
+            logging.info(f"Error stopping reader: {e}")
+            
+        # Clear state
+        with self.lock:
+            self.image = None
+            self.data = None
+            self.chunks.clear()
+            self.payload_array.clear()

@@ -11,7 +11,7 @@ from frameMQ.utils.helper import split_bytes, jpeg_encode
 class FrameCapture:
     def __init__(self, capture_params:CaptureParams,
                     encode_params: EncodeParams,
-                 ):
+                ):
         self.frame = None
         self.frame_num = 0
 
@@ -32,7 +32,7 @@ class FrameCapture:
         self.level = capture_params.level
 
         # some processing here
-        string_source = 'v4l2src' if self.platform == 'linux' else 'ksvideosrc device-index=0'
+        string_source = 'v4l2src' if self.platform == 'linux' else f'ksvideosrc device-index={self.source}'
         self.width = self.get_dimensions(self.level)[0]
         self.height = self.get_dimensions(self.level)[1]
         self.fps = self.get_dimensions(self.level)[2]

@@ -3,6 +3,7 @@ import time
 import gi
 gi.require_version('Gst', '1.0')  # Specify the version
 from gi.repository import Gst, GLib
+import logging
 
 import cv2
 
@@ -88,5 +89,19 @@ class FrameShow:
 
     def stop(self):
         self.stopped = True
-        self.appsrc.emit('end-of-stream')
-        self.pipeline.set_state(Gst.State.NULL)
+        try:
+            # Send end-of-stream signal
+            self.appsrc.emit('end-of-stream')
+            
+            # Wait for pipeline to process end-of-stream
+            time.sleep(0.1)
+            
+            # Stop pipeline
+            self.pipeline.set_state(Gst.State.NULL)
+            
+            # Wait for state change to complete
+            state_change = self.pipeline.get_state(timeout=Gst.CLOCK_TIME_NONE)
+            if state_change[0] != Gst.StateChangeReturn.SUCCESS:
+                logging.warning("Failed to stop GStreamer pipeline")
+        except Exception as e:
+            logging.info(f"Error stopping frame show: {e}")

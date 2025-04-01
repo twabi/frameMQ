@@ -71,12 +71,15 @@ class NetworkManagerPSO:
         if self.reader_type == 'kafka':
             self.admin_client = KafkaAdminClient(
                 bootstrap_servers=brokers,
-                request_timeout_ms=5000,  # Reduced timeout
-                api_version_auto_timeout_ms=5000
+                request_timeout_ms=35000,
+                api_version=(0, 10)
             )
             self.producer = KafkaProducer(
                 bootstrap_servers=brokers,
                 value_serializer=lambda v: json.dumps(v).encode('utf-8'),
+                api_version=(0, 10),
+                request_timeout_ms=35000,  # Must be larger than session_timeout_ms
+                connections_max_idle_ms=60000  # Must be larger than request_timeout_ms
             )
         elif self.reader_type == 'mqtt':
             self.admin_client = None
@@ -130,22 +133,31 @@ class NetworkManagerPSO:
 
 
     def stop(self):
+        """Stop the PSO optimization process and clean up resources."""
         self.stopped = True
+        
         try:
+            # First cleanup resources
+            self.cleanup()
+            
+            # Then try to delete topic if it exists
             if self.admin_client is not None:
                 self.admin_client.delete_topics(topics=[self.monitored_topic])
-            self.cleanup()
-            # logging.info(f"Deleted topic '{self.monitored_topic}'.")
         except Exception as e:
             logging.warning(f"Failed to delete topic '{self.monitored_topic}': {e}")
         finally:
-            self.monitor_thread.join()
+            # Wait for monitor thread with timeout
+            if self.monitor_thread and self.monitor_thread.is_alive():
+                self.monitor_thread.join(timeout=2.0)
+                if self.monitor_thread.is_alive():
+                    logging.warning("Monitor thread did not terminate within timeout")
+            
+            # Close clients
             if self.reader_type == 'mqtt':
                 self.producer.disconnect()
             elif self.reader_type == 'kafka':
                 self.admin_client.close()
                 self.producer.close()
-            # logging.info("Kafka clients closed. NetworkManagerPSO stopped.")
 
     def update_params(self, quality: int, level: int, chunk_number: int, message_size: int, latency: int):
         with self.lock:
@@ -254,14 +266,16 @@ class NetworkManagerPSO:
         while not self.stopped:
             latency_ratio = (self.latency - self.TARGET_LATENCY) / self.TARGET_LATENCY
 
-            while latency_ratio > self.LATENCY_THRESHOLD:
+            # Add stopped check to inner loop
+            while not self.stopped and latency_ratio > self.LATENCY_THRESHOLD:
                 logging.info(F"Current latency: {self.latency}")
                 if self.latency <= 0:
-                    #logging.info("Latency is 0. Skipping optimization.")
                     time.sleep(0.1)
                     continue
 
                 for particle in self.particles:
+                    if self.stopped:
+                        break
                     self._process_particle(particle)
 
                     sleep_time = max(0.1, min(self.sleep_interval,
@@ -331,10 +345,8 @@ class NetworkManagerPSO:
 
     def cleanup(self):
         """Clean up resources"""
-        self.thread_pool.shutdown(wait=True)
-
-        if self.reader_type == 'mqtt':
-            self.producer.disconnect()
-        elif self.reader_type == 'kafka':
-            self.admin_client.close()
-            self.producer.close()
+        try:
+            # Shutdown thread pool with timeout
+            self.thread_pool.shutdown(wait=True, timeout=2.0)
+        except Exception as e:
+            logging.warning(f"Error shutting down thread pool: {e}")

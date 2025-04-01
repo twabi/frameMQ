@@ -77,12 +77,14 @@ class Writer:
             elif params.writer_type == 'kafka':
                 producer = KafkaProducer(
                     bootstrap_servers=params.brokers,
-                    compression_type='zstd',
+                    compression_type='gzip',
                     max_request_size=10485880,
                     batch_size=5048588,
                     linger_ms=5,
                     send_buffer_bytes=5048588,
-                    receive_buffer_bytes=5048588
+                    receive_buffer_bytes=5048588,
+                    api_version=(0, 10),
+                    request_timeout_ms=15000
                 )
                 return producer
             else:

@@ -86,7 +86,11 @@ class Reader:
                     fetch_max_bytes=5048588,
                     fetch_max_wait_ms=5,
                     receive_buffer_bytes=10485880,
-                    send_buffer_bytes=10485880
+                    send_buffer_bytes=10485880,
+                    api_version=(0, 10),
+                    request_timeout_ms=35000,
+                    session_timeout_ms=30000,
+                    connections_max_idle_ms=60000
                 )
                 return consumer
 
@@ -187,27 +191,39 @@ class Reader:
         """Stop all components and threads."""
         self.stopped = True
 
-        # Stop components
-        self.frame_show.stop()
-        self.frame_retrieve.stop()
+        # Stop components first
+        try:
+            self.frame_show.stop()
+            self.frame_retrieve.stop()
 
-        if self.params.optimizer != 'none':
-            self.optimizer.stop()
+            if self.params.optimizer != 'none':
+                self.optimizer.stop()
+        except Exception as e:
+            logging.info(f"Error stopping components: {e}")
 
-        # Clear queue
+        # Clear queue with timeout
         while not self.image_queue.empty():
             try:
-                self.image_queue.get_nowait()
+                self.image_queue.get(timeout=0.1)  # Use timeout to prevent infinite blocking
             except Empty:
                 break
 
-        # Wait for threads to finish
+        # Wait for threads to finish with timeout
         for thread in self.threads:
             if thread.is_alive():
-                thread.join(timeout=1.0)
+                thread.join(timeout=2.0)  # Reduced timeout to 2 seconds
+                if thread.is_alive():
+                    logging.warning(f"Thread {thread.name} did not terminate within timeout")
 
-        # Close Kafka consumer
+        # Close Kafka consumer or MQTT client
         try:
-            self.consumer.close()
+            if self.params.reader_type == 'mqtt':
+                self.consumer.loop_stop()
+                self.consumer.disconnect()
+            else:
+                self.consumer.close()
         except Exception as e:
             logging.info(f"Error closing consumer: {e}")
+
+        # Clear threads list
+        self.threads = []

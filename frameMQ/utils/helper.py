@@ -1,6 +1,10 @@
 import cv2
 import numpy as np
 from turbojpeg import TurboJPEG, TJFLAG_PROGRESSIVE, TJPF_BGR
+import csv
+from typing import List, Dict, Any
+import os
+from datetime import datetime
 
 
 jpeg = TurboJPEG()
@@ -66,3 +70,36 @@ def sanitize_json_string(json_str):
     # Apply the translation
     sanitized = json_str.translate(trans_table)
     return sanitized
+
+def save_metrics_to_csv(file_prefix:str, metrics: List[Dict[str, Any]], output_dir: str = "metrics") -> str:
+    """
+    Save metrics data to a CSV file with timestamp in the filename.
+
+    Args:
+        metrics (List[Dict[str, Any]]): List of metric dictionaries to save
+        output_dir (str): Directory to save the CSV file (default: "metrics")
+
+    Returns:
+        str: Path to the saved CSV file
+    """
+    # Create output directory if it doesn't exist
+    os.makedirs(output_dir, exist_ok=True)
+    
+    # Generate filename with timestamp
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    filename = f"{file_prefix}_{timestamp}.csv"
+    filepath = os.path.join(output_dir, filename)
+    
+    # Get all unique keys from metrics
+    fieldnames = set()
+    for metric in metrics:
+        fieldnames.update(metric.keys())
+    fieldnames = sorted(list(fieldnames))
+    
+    # Write to CSV
+    with open(filepath, 'w', newline='') as csvfile:
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(metrics)
+    
+    return filepath

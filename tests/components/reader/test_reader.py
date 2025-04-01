@@ -3,15 +3,17 @@ import unittest
 
 from frameMQ.agent.reader import Reader
 from frameMQ.models.models import ReaderParams
-
+from frameMQ.utils.helper import save_metrics_to_csv
 
 class TestReader(unittest.TestCase):
     def setUp(self):
-        reader_type = 'mqtt'
+        kafka_ip = '172.16.0.13' #'133.41.117.50'
+        mqtt_ip = '172.16.0.13' #'133.41.117.94'
+        reader_type = 'kafka'
         brokers = [
-            '133.41.117.50:9092', '133.41.117.50:9093',
-            '133.41.117.50:9094', '133.41.117.50:9095'
-        ] if reader_type == 'kafka' else ['133.41.117.94:1884']
+            f'{kafka_ip}:9092', f'{kafka_ip}:9096',
+            f'{kafka_ip}:9094', f'{kafka_ip}:9095'
+        ] if reader_type == 'kafka' else [f'{mqtt_ip}:1883']
 
         self.reader = Reader(
             params=ReaderParams(
@@ -19,7 +21,7 @@ class TestReader(unittest.TestCase):
                 brokers=brokers,
                 topic='video-trans',
                 reader_type=reader_type,
-                optimizer='pso'
+                optimizer='none'
             )
         )
 
@@ -34,9 +36,9 @@ class TestReader(unittest.TestCase):
     def test_write_read(self):
         self.reader.start()
         time.sleep(100)  # Simulate some runtime
+        filepath = save_metrics_to_csv('reader-kafka-none', self.reader.metrics)
         self.reader.stop()
 
-        # print(
-            #len(self.reader.metrics)
-        #)
+        
+        print(f"Metrics saved to: {filepath}")
         self.assertTrue(len(self.reader.metrics) > 0, "Metrics should have recorded data.")
