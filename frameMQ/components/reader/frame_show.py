@@ -6,18 +6,32 @@ from gi.repository import Gst, GLib
 import logging
 
 import cv2
+from frameMQ.components.common.video_saver import VideoSaver
 
 # Initialize GStreamer once
 Gst.init(None)
 
 class FrameShow:
-    def __init__(self, start_time: float):
+    def __init__(self, start_time: float, save_video: bool = False):
         self.image = None
         self.payload = None
         self.stopped = False
         self.lock = threading.Lock()
         self.metrics = []
         self.start_time = start_time
+        self.frame_count = 0
+
+        # Initialize video saver only if save_video is True
+        self.video_saver = None
+        if save_video:
+            self.video_saver = VideoSaver(output_dir="output_videos/received/")
+            self.video_saver.start_recording(
+                filename="received_video.mp4",
+                fps=30,
+                width=1280,
+                height=720,
+                is_reader=True
+            )
 
         # Create GStreamer pipeline with optimized settings
         self.pipeline = Gst.parse_launch(
@@ -51,7 +65,7 @@ class FrameShow:
             self.payload = payload
 
     def display(self):
-
+        duration = Gst.SECOND // 30 
         while not self.stopped:
             start_time = time.time()
             with self.lock:
@@ -66,9 +80,16 @@ class FrameShow:
                 else:
                     frame_resized = frame  # No need to resize if it's already 1280x720
 
-
                 # Create Gst.Buffer from frame bytes
                 buffer = Gst.Buffer.new_wrapped(frame_resized.tobytes())
+                # Calculate proper PTS based on frame count and FPS
+                pts = self.frame_count * duration
+                buffer.pts = pts
+                buffer.duration = duration
+                
+                # Save frame to video if video_saver is initialized
+                if self.video_saver is not None:
+                    self.video_saver.write_frame_reader(frame_resized, pts, duration)
 
                 # Push buffer to appsrc
                 ret = self.appsrc.emit('push-buffer', buffer)
@@ -80,6 +101,8 @@ class FrameShow:
                 # Update payload with show time
                 payload['show_time'] = time.time() * 1000
                 self.metrics.append(payload)
+
+                self.frame_count += 1
 
             # Calculate sleep time to maintain FPS
             elapsed = time.time() - start_time
@@ -103,5 +126,10 @@ class FrameShow:
             state_change = self.pipeline.get_state(timeout=Gst.CLOCK_TIME_NONE)
             if state_change[0] != Gst.StateChangeReturn.SUCCESS:
                 logging.warning("Failed to stop GStreamer pipeline")
+                
+            # Stop video recording if video_saver is initialized
+            if self.video_saver is not None:
+                self.video_saver.stop_recording()
+            
         except Exception as e:
             logging.info(f"Error stopping frame show: {e}")

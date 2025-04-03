@@ -122,6 +122,7 @@ class WriterParams:
     optimizer: str = 'none'
     source: int = 0
     notification_topic: str = 'notification'
+    save_video: bool = False  # Whether to save the original video
 
 
 
@@ -139,6 +140,7 @@ class ReaderParams:
     reader_type:str = 'kafka'
     optimizer: str = 'none'
     notification_topic: str = 'notification'
+    save_video: bool = False  # Whether to save the received video
 
 @dataclass
 class OptimizeTargetParams:

@@ -102,6 +102,7 @@ class Reader:
         """Initialize frame show and retrieve components."""
         self.frame_show = FrameShow(
             start_time=time.time(),
+            save_video=params.save_video
         )
 
         self.frame_retrieve = FrameRetrieve(

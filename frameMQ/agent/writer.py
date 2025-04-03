@@ -101,7 +101,8 @@ class Writer:
         )
         self.frame_capture = FrameCapture(
             capture_params=self.capture_params,
-            encode_params=self.encode_params
+            encode_params=self.encode_params,
+            save_video=params.save_video
         )
         # print("writer: ", params.optimizer)
         if params.optimizer != 'none':

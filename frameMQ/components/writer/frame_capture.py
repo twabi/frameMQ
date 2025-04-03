@@ -5,12 +5,14 @@ import cv2
 from frameMQ.models.models import CaptureParams, EncodeParams
 from concurrent.futures import ThreadPoolExecutor
 from frameMQ.utils.helper import split_bytes, jpeg_encode
+from frameMQ.components.common.video_saver import VideoSaver
 
 
 
 class FrameCapture:
     def __init__(self, capture_params:CaptureParams,
                     encode_params: EncodeParams,
+                    save_video: bool = False
                 ):
         self.frame = None
         self.frame_num = 0
@@ -40,6 +42,17 @@ class FrameCapture:
 
         self.pipeline = f"{string_source} ! image/jpeg, width={self.width}, height={self.height}, framerate={self.fps}/1 ! jpegdec ! videoconvert ! video/x-raw, format=BGR ! appsink"
         self.cap = cv2.VideoCapture(self.pipeline, cv2.CAP_GSTREAMER)
+
+        # Initialize video saver only if save_video is True
+        self.video_saver = None
+        if save_video:
+            self.video_saver = VideoSaver(output_dir="output_videos/original")
+            self.video_saver.start_recording(
+                filename="original_video.mp4",
+                fps=self.fps,
+                width=self.width,
+                height=self.height
+            )
 
         # start with the assumption that the capture is not stopped
         self.stopped = True
@@ -109,6 +122,10 @@ class FrameCapture:
                             local_frame = frame.copy()
                             local_frame_num = self.frame_num
                             self.frame_num += 1
+                            
+                            # Save frame to video
+                            if self.video_saver is not None:
+                                self.video_saver.write_frame(local_frame)
 
                     executor.submit(self.encode, local_frame, local_frame_num)
 
@@ -119,3 +136,5 @@ class FrameCapture:
     def stop(self):
         self.stopped = True
         self.cap.release()
+        if self.video_saver is not None:
+            self.video_saver.stop_recording()
